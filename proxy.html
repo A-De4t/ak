@@ -1,138 +1,73 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>代理专属平台</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
-        body { background: #f5f7fa; padding: 20px; }
-        .proxy-header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 8px; margin-bottom: 30px; }
-        .proxy-header button { background: #e74c3c; border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center; }
-        .stat-card .number { font-size: 24px; font-weight: 600; margin: 10px 0; }
-        .stat-card .label { color: #7f8c8d; font-size: 14px; }
-        .stat-card .tag { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; color: white; margin-bottom: 10px; }
-        .tag-green { background: #27ae60; }
-        .tag-orange { background: #f39c12; }
-        .tag-red { background: #e74c3c; }
-        .main-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .content-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .content-card h3 { color: #34495e; margin-bottom: 20px; font-size: 18px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #34495e; font-size: 14px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-        .btn { background: #3498db; border: none; color: white; padding: 10px 25px; border-radius: 4px; cursor: pointer; margin-right: 10px; }
-        .btn:hover { background: #2980b9; }
-        .btn-secondary { background: #95a5a6; }
-        .btn-secondary:hover { background: #7f8c8d; }
-        .bottom-buttons { display: flex; gap: 10px; margin-top: 20px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>代理专属平台</title>
+  <!-- 引入公共样式 -->
+  <link rel="stylesheet" href="common.css">
+  <style>
+    /* 仅代理页专属样式（卡片布局、统计样式） */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      text-align: center;
+      padding: 20px;
+    }
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; margin-bottom: 5px; color: #34495e; }
+    .bottom-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    @media (max-width: 992px) { .stats-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 768px) { 
+      .stats-grid { grid-template-columns: 1fr; }
+      .main-content { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
-    <div class="proxy-header">
-        <h2>代理专属平台 - <span id="proxyName">---</span></h2>
-        <button id="logoutBtn">安全退出</button>
-    </div>
+  <!-- 仅代理页结构（空白框架，你自己填内容） -->
+  <div class="page-header">
+    <h2>代理专属平台 - <span id="proxyName"></span></h2>
+    <button class="btn-danger" onclick="logout()">安全退出</button>
+  </div>
 
-    <!-- 数据统计卡片 -->
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="tag tag-green">新增代理</div>
-            <div class="number">0</div>
-            <div class="label">今日新增</div>
-        </div>
-        <div class="stat-card">
-            <div class="tag tag-orange">新增订单</div>
-            <div class="number">0</div>
-            <div class="label">今日新增</div>
-        </div>
-        <div class="stat-card">
-            <div class="tag tag-red">今日上线</div>
-            <div class="number">1</div>
-            <div class="label">今日上线代理</div>
-        </div>
-        <div class="stat-card">
-            <div class="tag tag-red">推广余额</div>
-            <div class="number">9999</div>
-            <div class="label">可提现</div>
-        </div>
-    </div>
+  <!-- 4个统计卡片（空白，你填标题/数字） -->
+  <div class="stats-grid">
+    <div class="card stat-card"></div>
+    <div class="card stat-card"></div>
+    <div class="card stat-card"></div>
+    <div class="card stat-card"></div>
+  </div>
 
-    <!-- 主要内容区 -->
-    <div class="main-content">
-        <div class="content-card">
-            <h3>数据概览</h3>
-            <div class="stat-card" style="text-align: left;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div class="number" style="font-size: 20px;">0.200</div>
-                        <div class="label">推广单价</div>
-                    </div>
-                    <div class="bottom-buttons">
-                        <button class="btn" style="padding: 6px 12px; font-size: 14px;">推广</button>
-                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 14px;">设置</button>
-                    </div>
-                </div>
-            </div>
-            <div class="stat-card" style="text-align: left; margin-top: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div class="number" style="font-size: 20px;">0.4</div>
-                        <div class="label">下级单价</div>
-                    </div>
-                    <button class="btn" style="padding: 6px 12px; font-size: 14px;">设置</button>
-                </div>
-            </div>
-        </div>
+  <!-- 左右主内容区（空白，你填表单/按钮/文字） -->
+  <div class="main-content">
+    <div class="card"></div>
+    <div class="card"></div>
+  </div>
 
-        <div class="content-card">
-            <h3>个人推广</h3>
-            <div class="form-group">
-                <label>推广链接</label>
-                <input type="text" value="https://a-de4t.github.io/ak/" readonly>
-            </div>
-            <div class="form-group">
-                <label>渠道ID</label>
-                <input type="text" value="12345" readonly>
-            </div>
-            <div class="form-group">
-                <label>推广码</label>
-                <input type="text" value="1" readonly>
-            </div>
-            <div class="form-group">
-                <label>我的下级</label>
-                <input type="text" value="192.168.10.109" readonly>
-            </div>
-            <div class="bottom-buttons">
-                <button class="btn">开始推广</button>
-                <button class="btn btn-secondary">生成推广页</button>
-            </div>
-        </div>
-    </div>
+  <!-- 引入公共JS -->
+  <script src="common.js"></script>
+  <script>
+    // 权限验证：仅代理可访问
+    const currentUser = checkAuth('proxy');
+    if (!currentUser) return;
+    // 显示当前代理用户名
+    document.getElementById('proxyName').innerText = currentUser.username;
 
-    <script>
-        const LOGIN_PAGE = 'index.html';
-        let currentUser = JSON.parse(localStorage.getItem('currentLoginUser'));
-
-        // 权限验证
-        window.onload = function() {
-            if (!currentUser || currentUser.role !== 'proxy') {
-                alert('无代理权限，禁止访问！');
-                window.location.href = LOGIN_PAGE;
-                return;
-            }
-            document.getElementById('proxyName').innerText = currentUser.username;
-        }
-
-        // 退出登录
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            if (confirm('确定退出代理平台吗？')) {
-                localStorage.removeItem('currentLoginUser');
-                window.location.href = LOGIN_PAGE;
-            }
-        });
-    </script>
+    // 这里写代理页专属JS（比如文件上传、数据统计），你自己加
+    // 示例：代理文件上传（如果需要）
+    function uploadFile() {
+      // 你的上传逻辑
+    }
+  </script>
 </body>
 </html>
