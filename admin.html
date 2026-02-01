@@ -37,14 +37,12 @@
     </style>
 </head>
 <body>
-    <!-- 头部：显示当前登录身份 + 退出 -->
     <div class="admin-header">
         <h1>超级管理员管理后台</h1>
         <button id="logoutBtn">安全退出</button>
     </div>
 
     <div class="admin-container">
-        <!-- 左侧：文件管理（管理员可查看/管理所有用户的文件） -->
         <div class="admin-card">
             <h2>文件管理（所有用户）</h2>
             <form id="uploadForm" enctype="multipart/form-data">
@@ -61,7 +59,6 @@
             </div>
         </div>
 
-        <!-- 右侧：用户管理（增/删代理，超级管理员不可删） -->
         <div class="admin-card">
             <h2>用户管理（代理账号）</h2>
             <form id="addUserForm" class="user-form">
@@ -81,27 +78,24 @@
     </div>
 
     <script>
-        // 配置：退出返回登录页
         const LOGIN_PAGE = 'index.html';
-        const SUPER_ADMIN = { username: 'admin', password: '123456', role: 'admin' };
-        // 获取当前登录用户+系统用户+所有文件
+        const SUPER_ADMIN = { username: 'ak', password: '2026', role: 'admin' };
         let currentUser = JSON.parse(localStorage.getItem('currentLoginUser'));
         let systemUsers = JSON.parse(localStorage.getItem('systemUsers')) || [SUPER_ADMIN];
-        // 核心：文件按「用户名-文件」存储，实现隔离
         let allFiles = JSON.parse(localStorage.getItem('allFiles')) || {};
 
-        // 页面初始化：验证是否为管理员，非管理员跳回登录页
+        // 权限验证：非ak管理员禁止访问
         window.onload = function() {
-            if (!currentUser || currentUser.role !== 'admin') {
-                alert('无管理员权限，禁止访问！');
+            if (!currentUser || currentUser.role !== 'admin' || currentUser.username !== 'ak') {
+                alert('无超级管理员权限，禁止访问！');
                 window.location.href = LOGIN_PAGE;
                 return;
             }
-            renderAllFileList(); // 渲染所有用户的文件
-            renderUserList();    // 渲染代理列表
+            renderAllFileList();
+            renderUserList();
         }
 
-        // 退出登录：清空当前用户信息
+        // 退出登录
         document.getElementById('logoutBtn').addEventListener('click', function() {
             if (confirm('确定退出超级管理员后台吗？')) {
                 localStorage.removeItem('currentLoginUser');
@@ -109,7 +103,7 @@
             }
         });
 
-        // 管理员文件上传：文件关联当前管理员用户名
+        // 文件上传
         const uploadBox = document.getElementById('uploadBox');
         const fileInput = document.getElementById('fileInput');
         const uploadForm = document.getElementById('uploadForm');
@@ -124,9 +118,7 @@
             e.preventDefault();
             const files = fileInput.files;
             if (files.length === 0) { alert('请选择文件！'); return; }
-            // 初始化当前用户的文件存储容器
             if (!allFiles[currentUser.username]) allFiles[currentUser.username] = [];
-            // 遍历上传，关联用户名
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 allFiles[currentUser.username].unshift({
@@ -144,17 +136,15 @@
             renderAllFileList();
         });
 
-        // 渲染所有用户的文件（管理员专属）
+        // 渲染所有文件
         function renderAllFileList() {
             const container = document.getElementById('fileListContainer');
             let fileHtml = '';
             let hasFile = false;
-            // 遍历所有用户的文件
             for (let [user, files] of Object.entries(allFiles)) {
                 if (files.length === 0) continue;
                 hasFile = true;
-                // 拼接用户名+文件列表
-                fileHtml += `<div style="margin-bottom:20px;"><p class="file-owner">📁 ${user === 'admin' ? '超级管理员' : '代理【'+user+'】'} 的文件</p >`;
+                fileHtml += `<div style="margin-bottom:20px;"><p class="file-owner">📁 ${user === 'ak' ? '超级管理员' : '代理【'+user+'】'} 的文件</p >`;
                 files.forEach(file => {
                     fileHtml += `
                         <div class="file-item">
@@ -174,7 +164,7 @@
             container.innerHTML = hasFile ? fileHtml : '<p class="empty-tip">暂无任何用户上传文件</p >';
         }
 
-        // 删除任意用户的文件（管理员专属）
+        // 删除文件
         window.deleteFile = function(user, fileId) {
             if (confirm('确定删除该文件吗？删除后不可恢复！')) {
                 allFiles[user] = allFiles[user].filter(file => file.id !== fileId);
@@ -183,18 +173,16 @@
             }
         }
 
-        // 代理用户管理：增/删（隐藏管理员选项，仅能添加代理）
+        // 添加代理
         const addUserForm = document.getElementById('addUserForm');
         addUserForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const username = document.getElementById('newUsername').value.trim();
             const password = document.getElementById('newPassword').value.trim();
-            // 检查用户名重复
             if (systemUsers.some(user => user.username === username)) {
                 alert('该用户名已存在，请更换！');
                 return;
             }
-            // 仅能添加代理
             systemUsers.push({ username, password, role: 'proxy' });
             localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
             alert(`代理账号【${username}】添加成功！`);
@@ -202,10 +190,9 @@
             renderUserList();
         });
 
-        // 渲染代理列表（隐藏超级管理员，仅显示代理）
+        // 渲染代理列表
         function renderUserList() {
             const container = document.getElementById('userListContainer');
-            // 过滤出所有代理用户
             const proxyUsers = systemUsers.filter(user => user.role === 'proxy');
             if (proxyUsers.length === 0) {
                 container.innerHTML = '<p class="empty-tip">暂无添加代理账号</p >';
@@ -226,11 +213,11 @@
             container.innerHTML = userHtml;
         }
 
-        // 删除代理账号（同时删除该代理的所有文件）
+        // 删除代理（同步删除文件）
         window.deleteUser = function(username) {
             if (confirm(`确定删除代理【${username}】吗？将同时删除该代理的所有文件！`)) {
                 systemUsers = systemUsers.filter(user => user.username !== username);
-                delete allFiles[username]; // 同步删除代理文件
+                delete allFiles[username];
                 localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
                 localStorage.setItem('allFiles', JSON.stringify(allFiles));
                 renderUserList();
