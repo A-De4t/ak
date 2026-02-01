@@ -140,7 +140,7 @@
       if (!pwd) { alert('请输入代理密码！'); return; }
       if (sysUser.some(u => u.username === name)) { alert('该用户名已存在，请更换！'); return; }
       // 添加新代理并初始化文件目录
-      sysUser.push({ username: name, password: pwd, role: 'proxy', status: 'active' });
+      sysUser.push({ username: name, password: pwd, role: 'proxy', status: 'active', lastLogin: '暂无登录' });
       sysFile[name] = [];
       // 保存数据+记录日志+刷新页面
       saveAllData();
