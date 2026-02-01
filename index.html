@@ -4,56 +4,80 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>系统登录</title>
-  <!-- 引入公共样式（一行代码，共用所有样式） -->
   <link rel="stylesheet" href="common.css">
   <style>
-    /* 仅登录页专属样式（比如登录框居中），公共样式不写的才在这加 */
-    .login-box {
-      max-width: 400px;
-      margin: 100px auto;
-      padding: 30px;
-    }
-    .login-box h2 {
-      text-align: center;
-      color: #34495e;
-      margin-bottom: 25px;
-    }
+    /* 极简登录样式，居中显示 */
+    .login-box { width: 100%; max-width: 400px; margin: 80px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+    .login-box h2 { text-align: center; color: #2c3e50; margin: 0 0 25px; }
+    .form-item { margin: 20px 0; }
+    .form-item label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
+    .form-item input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; outline: none; font-size: 16px; }
+    .form-item input:focus { border-color: #3498db; }
+    .login-btn { width: 100%; padding: 12px; border: none; border-radius: 6px; background: #3498db; color: white; font-size: 16px; cursor: pointer; transition: background 0.3s; }
+    .login-btn:hover { background: #2980b9; }
   </style>
 </head>
-<body>
-  <!-- 仅登录页结构 -->
-  <div class="card login-box">
-    <h2>系统登录</h2>
-    <input type="text" id="username" placeholder="请输入用户名" required>
-    <input type="password" id="password" placeholder="请输入密码" required>
-    <button class="btn" style="width: 100%;" onclick="login()">立即登录</button>
+<body style="background: #f5f5f5;">
+  <div class="login-box">
+    <h2>管理员/代理登录</h2>
+    <div class="form-item">
+      <label>账号</label>
+      <input type="text" id="username" placeholder="请输入登录账号" autocomplete="off">
+    </div>
+    <div class="form-item">
+      <label>密码</label>
+      <input type="password" id="password" placeholder="请输入登录密码" autocomplete="off">
+    </div>
+    <button class="login-btn" onclick="login()">立即登录</button>
   </div>
 
-  <!-- 引入公共JS（一行代码，共用所有逻辑） -->
   <script src="common.js"></script>
   <script>
-    // 仅登录页专属JS（登录逻辑）
-   function login() {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
-  let systemUsers = getLocalData('systemUsers');
-  if (systemUsers.length === 0) systemUsers = [CONFIG.SUPER_ADMIN];
-  const matchUser = systemUsers.find(u => u.username === username && u.password === password);
-  
-  if (!matchUser) {
-    alert('账号或密码错误！');
-    return;
-  }
+    // 页面加载先检查是否已登录，避免重复登录
+    window.onload = function() {
+      const currentUser = getLocalData('currentLoginUser');
+      if (currentUser && currentUser.length > 0) {
+        const user = currentUser[0];
+        location.href = user.role === 'admin' ? CONFIG.ADMIN_PAGE : CONFIG.PROXY_PAGE;
+      }
+    };
 
-  // 新增：检查用户是否被禁用
-  if (matchUser.role === 'proxy' && matchUser.status === 'disabled') {
-    alert('此账号已被禁用，无法登录！');
-    return;
-  }
+    // 核心登录逻辑：含账号密码验证+禁用用户拦截
+    function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      
+      // 非空验证
+      if (!username) { alert('请输入账号！'); return; }
+      if (!password) { alert('请输入密码！'); return; }
 
-  setLocalData('currentLoginUser', [matchUser]);
-  window.location.href = matchUser.role === 'admin' ? CONFIG.ADMIN_PAGE : CONFIG.PROXY_PAGE;
-}
+      // 获取系统用户数据，无数据则初始化管理员
+      let systemUsers = getLocalData('systemUsers') || [CONFIG.SUPER_ADMIN];
+      // 匹配账号密码
+      const matchUser = systemUsers.find(u => u.username === username && u.password === password);
+      
+      // 账号密码错误
+      if (!matchUser) {
+        alert('账号或密码错误！');
+        document.getElementById('password').value = '';
+        return;
+      }
+
+      // 关键：拦截被禁用的代理用户（管理员不拦截）
+      if (matchUser.role === 'proxy' && matchUser.status === 'disabled') {
+        alert('此账号已被禁用，无法登录！');
+        document.getElementById('password').value = '';
+        return;
+      }
+
+      // 登录成功：保存登录状态+跳转对应页面
+      setLocalData('currentLoginUser', [matchUser]);
+      // 更新代理最后登录时间（管理员无需更新）
+      if (matchUser.role === 'proxy') {
+        systemUsers = systemUsers.map(u => u.username === username ? { ...u, lastLogin: new Date().toISOString() } : u);
+        setLocalData('systemUsers', systemUsers);
+      }
+      location.href = matchUser.role === 'admin' ? CONFIG.ADMIN_PAGE : CONFIG.PROXY_PAGE;
     }
   </script>
 </body>
