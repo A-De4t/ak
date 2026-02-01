@@ -7,72 +7,85 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
         body { background: #f5f7fa; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 8px; margin-bottom: 30px; width: 100%; max-width: 1000px; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 8px; margin-bottom: 30px; width: 100%; max-width: 1200px; }
         .admin-header button { background: #e74c3c; border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
         .admin-header button:hover { background: #c0392b; }
-        .admin-container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; width: 100%; max-width: 1000px; }
-        .admin-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .admin-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 25px; width: 100%; max-width: 1200px; }
+        .admin-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: 100%; }
         .admin-card h2 { color: #34495e; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 20px; }
         .upload-box { border: 2px dashed #bdc3c7; border-radius: 8px; padding: 40px 20px; text-align: center; margin: 20px 0; cursor: pointer; transition: border-color 0.3s; }
         .upload-box:hover { border-color: #3498db; }
         .upload-box input { display: none; }
         .btn { background: #3498db; border: none; color: white; padding: 10px 25px; border-radius: 4px; cursor: pointer; transition: background 0.3s; margin-top: 15px; font-size: 16px; }
         .btn:hover { background: #2980b9; }
-        .btn-danger { background: #e74c3c; padding: 6px 12px; font-size: 14px; }
+        .btn-danger { background: #e74c3c; padding: 6px 12px; font-size: 14px; border: none; color: white; border-radius: 4px; cursor: pointer; }
         .btn-danger:hover { background: #c0392b; }
         .tip { color: #7f8c8d; font-size: 14px; margin-top: 15px; }
-        .file-list, .user-list { margin-top: 20px; max-height: 300px; overflow-y: auto; padding-right: 10px; }
-        .file-item, .user-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #f8f9fa; border-radius: 4px; margin-bottom: 10px; }
-        .file-item div, .user-item div { display: flex; flex-direction: column; }
-        .file-item small, .user-item small { color: #7f8c8d; font-size: 12px; margin-top: 5px; }
-        .file-item a { color: #3498db; text-decoration: none; margin-right: 10px; }
-        .file-item a:hover { text-decoration: underline; }
-        .user-form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        .user-form input, .user-form select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .file-list, .user-list, .agent-file-list { margin-top: 20px; max-height: 400px; overflow-y: auto; padding-right: 10px; }
+        .file-item, .user-item, .agent-file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #f8f9fa; border-radius: 4px; margin-bottom: 10px; }
+        .file-item div, .user-item div, .agent-file-item div { display: flex; flex-direction: column; }
+        .file-item small, .user-item small, .agent-file-item small { color: #7f8c8d; font-size: 12px; margin-top: 5px; }
+        .file-item a, .agent-file-item a { color: #3498db; text-decoration: none; margin-right: 10px; }
+        .file-item a:hover, .agent-file-item a:hover { text-decoration: underline; }
         .user-role { color: #27ae60; font-size: 14px; font-weight: 500; }
         .role-proxy { color: #f39c12; }
         .empty-tip { color: #7f8c8d; text-align: center; padding: 30px 0; font-size: 14px; }
         .file-owner { color: #e67e22; font-weight: 500; }
+        .agent-filter { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; font-size: 14px; outline: none; }
+        .agent-filter:focus { border-color: #3498db; }
+        .agent-folder-title { color: #2c3e50; font-weight: 600; margin: 15px 0 10px 0; font-size: 15px; }
+        @media (max-width: 992px) { .admin-container { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 768px) { .admin-container { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="admin-header">
-        <h1>超级管理员管理后台</h1>
+        <h1>超级管理员管理后台 - ak</h1>
         <button id="logoutBtn">安全退出</button>
     </div>
 
     <div class="admin-container">
+        <!-- 1. 管理员自身文件管理 -->
         <div class="admin-card">
-            <h2>文件管理（所有用户）</h2>
+            <h2>我的文件管理</h2>
             <form id="uploadForm" enctype="multipart/form-data">
                 <label class="upload-box" id="uploadBox">
                     点击选择文件<br><span>支持任意格式，单文件≤100MB</span>
                     <input type="file" name="file" id="fileInput" multiple>
                 </label>
                 <button type="submit" class="btn">上传文件</button>
-                <p class="tip">✅ 管理员文件单独存储，可查看所有代理文件</p >
+                <p class="tip">✅ 管理员文件单独存储，可查看所有代理文件</p>
             </form>
             <div class="file-list">
-                <h3>所有文件列表</h3>
-                <div id="fileListContainer"></div>
+                <h3>我的上传文件</h3>
+                <div id="myFileListContainer"></div>
             </div>
         </div>
 
+        <!-- 2. 代理账号管理 -->
         <div class="admin-card">
-            <h2>用户管理（代理账号）</h2>
-            <form id="addUserForm" class="user-form">
-                <input type="text" id="newUsername" placeholder="代理用户名" required>
-                <input type="password" id="newPassword" placeholder="代理密码" required>
-                <select id="newRole" required style="display: none;">
+            <h2>代理账号管理</h2>
+            <form id="addUserForm" class="user-form" style="display: flex; flex-direction: column; gap: 15px;">
+                <input type="text" id="newUsername" placeholder="代理用户名" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                <input type="password" id="newPassword" placeholder="代理密码" required style="padding:10px; border:1px solid #ddd; border-radius:4px;">
+                <select id="newRole" required style="display: none; padding:10px; border:1px solid #ddd; border-radius:4px;">
                     <option value="proxy" selected>代理</option>
                 </select>
                 <button type="submit" class="btn">添加代理</button>
-                <p class="tip">✅ 新增默认为代理，无用户管理权限</p >
+                <p class="tip">✅ 新增默认为代理，无用户管理权限</p>
             </form>
             <div class="user-list">
                 <h3>代理账号列表</h3>
                 <div id="userListContainer"></div>
+            </div>
+        </div>
+
+        <!-- 3. 新增：所有代理文件管理（核心需求） -->
+        <div class="admin-card">
+            <h2>代理文件管理</h2>
+            <input type="text" id="agentFileFilter" class="agent-filter" placeholder="输入代理用户名筛选文件...">
+            <div class="agent-file-list">
+                <div id="agentFileListContainer"></div>
             </div>
         </div>
     </div>
@@ -83,6 +96,8 @@
         let currentUser = JSON.parse(localStorage.getItem('currentLoginUser'));
         let systemUsers = JSON.parse(localStorage.getItem('systemUsers')) || [SUPER_ADMIN];
         let allFiles = JSON.parse(localStorage.getItem('allFiles')) || {};
+        // 初始化当前管理员文件目录
+        if (!allFiles[currentUser.username]) allFiles[currentUser.username] = [];
 
         // 权限验证：非ak管理员禁止访问
         window.onload = function() {
@@ -91,8 +106,11 @@
                 window.location.href = LOGIN_PAGE;
                 return;
             }
-            renderAllFileList();
-            renderUserList();
+            renderMyFileList(); // 渲染管理员自身文件
+            renderUserList();   // 渲染代理账号
+            renderAllAgentFiles(); // 渲染所有代理文件
+            // 绑定代理文件筛选事件
+            document.getElementById('agentFileFilter').addEventListener('input', filterAgentFiles);
         }
 
         // 退出登录
@@ -103,7 +121,7 @@
             }
         });
 
-        // 文件上传
+        // ---------------------- 1. 管理员自身文件操作 ----------------------
         const uploadBox = document.getElementById('uploadBox');
         const fileInput = document.getElementById('fileInput');
         const uploadForm = document.getElementById('uploadForm');
@@ -118,7 +136,6 @@
             e.preventDefault();
             const files = fileInput.files;
             if (files.length === 0) { alert('请选择文件！'); return; }
-            if (!allFiles[currentUser.username]) allFiles[currentUser.username] = [];
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 allFiles[currentUser.username].unshift({
@@ -133,46 +150,36 @@
             alert(`成功上传${files.length}个文件！`);
             uploadForm.reset();
             uploadBox.innerHTML = `点击选择文件<br><span>支持任意格式，单文件≤100MB</span>`;
-            renderAllFileList();
+            renderMyFileList();
+            renderAllAgentFiles(); // 上传后刷新代理文件列表
         });
-
-        // 渲染所有文件
-        function renderAllFileList() {
-            const container = document.getElementById('fileListContainer');
+        // 渲染管理员自身文件
+        function renderMyFileList() {
+            const container = document.getElementById('myFileListContainer');
+            const myFiles = allFiles[currentUser.username] || [];
+            if (myFiles.length === 0) {
+                container.innerHTML = '<p class="empty-tip">暂无上传文件</p>';
+                return;
+            }
             let fileHtml = '';
-            let hasFile = false;
-            for (let [user, files] of Object.entries(allFiles)) {
-                if (files.length === 0) continue;
-                hasFile = true;
-                fileHtml += `<div style="margin-bottom:20px;"><p class="file-owner">📁 ${user === 'ak' ? '超级管理员' : '代理【'+user+'】'} 的文件</p >`;
-                files.forEach(file => {
-                    fileHtml += `
-                        <div class="file-item">
-                            <div>
-                                <span>${file.name}</span>
-                                <small>${file.size} | ${file.time}</small>
-                            </div>
-                            <div>
-                                <a href=" " target="_blank">打开</a >
-                                <button class="btn btn-danger" onclick="deleteFile('${user}', ${file.id})">删除</button>
-                            </div>
+            myFiles.forEach(file => {
+                fileHtml += `
+                    <div class="file-item">
+                        <div>
+                            <span>${file.name}</span>
+                            <small>${file.size} | ${file.time}</small>
                         </div>
-                    `;
-                });
-                fileHtml += '</div>';
-            }
-            container.innerHTML = hasFile ? fileHtml : '<p class="empty-tip">暂无任何用户上传文件</p >';
+                        <div>
+                            <a href="${file.url}" target="_blank">打开</a>
+                            <button class="btn btn-danger" onclick="deleteFile('${currentUser.username}', ${file.id})">删除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = fileHtml;
         }
 
-        // 删除文件
-        window.deleteFile = function(user, fileId) {
-            if (confirm('确定删除该文件吗？删除后不可恢复！')) {
-                allFiles[user] = allFiles[user].filter(file => file.id !== fileId);
-                localStorage.setItem('allFiles', JSON.stringify(allFiles));
-                renderAllFileList();
-            }
-        }
-
+        // ---------------------- 2. 代理账号管理 ----------------------
         // 添加代理
         const addUserForm = document.getElementById('addUserForm');
         addUserForm.addEventListener('submit', function(e) {
@@ -183,19 +190,22 @@
                 alert('该用户名已存在，请更换！');
                 return;
             }
+            // 新增代理时初始化其文件目录
+            if (!allFiles[username]) allFiles[username] = [];
             systemUsers.push({ username, password, role: 'proxy' });
             localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
+            localStorage.setItem('allFiles', JSON.stringify(allFiles));
             alert(`代理账号【${username}】添加成功！`);
             addUserForm.reset();
             renderUserList();
+            renderAllAgentFiles(); // 添加代理后刷新文件列表
         });
-
-        // 渲染代理列表
+        // 渲染代理账号
         function renderUserList() {
             const container = document.getElementById('userListContainer');
             const proxyUsers = systemUsers.filter(user => user.role === 'proxy');
             if (proxyUsers.length === 0) {
-                container.innerHTML = '<p class="empty-tip">暂无添加代理账号</p >';
+                container.innerHTML = '<p class="empty-tip">暂无添加代理账号</p>';
                 return;
             }
             let userHtml = '';
@@ -212,19 +222,86 @@
             });
             container.innerHTML = userHtml;
         }
-
         // 删除代理（同步删除文件）
         window.deleteUser = function(username) {
             if (confirm(`确定删除代理【${username}】吗？将同时删除该代理的所有文件！`)) {
                 systemUsers = systemUsers.filter(user => user.username !== username);
-                delete allFiles[username];
+                delete allFiles[username]; // 删除代理所有文件
                 localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
                 localStorage.setItem('allFiles', JSON.stringify(allFiles));
                 renderUserList();
-                renderAllFileList();
+                renderAllAgentFiles(); // 删除后刷新文件列表
             }
-        }
+        };
 
+        // ---------------------- 3. 核心：所有代理文件管理（查看/打开/删除） ----------------------
+        // 渲染所有代理文件
+        function renderAllAgentFiles() {
+            const container = document.getElementById('agentFileListContainer');
+            const proxyUsers = systemUsers.filter(user => user.role === 'proxy');
+            // 筛选有文件的代理
+            const agentWithFiles = proxyUsers.filter(agent => allFiles[agent.username] && allFiles[agent.username].length > 0);
+            
+            if (proxyUsers.length === 0) {
+                container.innerHTML = '<p class="empty-tip">暂无添加代理账号</p>';
+                return;
+            }
+            if (agentWithFiles.length === 0) {
+                container.innerHTML = '<p class="empty-tip">所有代理暂无上传文件</p>';
+                return;
+            }
+            // 渲染每个代理的文件
+            let agentFileHtml = '';
+            agentWithFiles.forEach(agent => {
+                const agentFiles = allFiles[agent.username];
+                agentFileHtml += `<div class="agent-folder" data-agent="${agent.username}">`;
+                agentFileHtml += `<p class="agent-folder-title"> 代理【${agent.username}】- 共${agentFiles.length}个文件</p>`;
+                agentFiles.forEach(file => {
+                    agentFileHtml += `
+                        <div class="agent-file-item">
+                            <div>
+                                <span>${file.name}</span>
+                                <small>${file.size} | 上传时间：${file.time}</small>
+                            </div>
+                            <div>
+                                <a href="${file.url}" target="_blank">打开/下载</a>
+                                <button class="btn btn-danger" onclick="deleteAgentFile('${agent.username}', ${file.id})">删除</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                agentFileHtml += '</div>';
+            });
+            container.innerHTML = agentFileHtml;
+        }
+        // 筛选代理文件（根据用户名）
+        function filterAgentFiles() {
+            const filterText = document.getElementById('agentFileFilter').value.trim().toLowerCase();
+            const agentFolders = document.querySelectorAll('.agent-folder');
+            agentFolders.forEach(folder => {
+                const agentName = folder.dataset.agent.toLowerCase();
+                folder.style.display = agentName.includes(filterText) ? 'block' : 'none';
+            });
+        }
+        // 删除代理文件
+        window.deleteAgentFile = function(agentName, fileId) {
+            if (confirm(`确定删除代理【${agentName}】的该文件吗？删除后不可恢复！`)) {
+                allFiles[agentName] = allFiles[agentName].filter(file => file.id !== fileId);
+                localStorage.setItem('allFiles', JSON.stringify(allFiles));
+                renderAllAgentFiles(); // 删除后刷新
+            }
+        };
+
+        // ---------------------- 通用方法 ----------------------
+        // 删除文件（通用）
+        window.deleteFile = function(user, fileId) {
+            if (confirm('确定删除该文件吗？删除后不可恢复！')) {
+                allFiles[user] = allFiles[user].filter(file => file.id !== fileId);
+                localStorage.setItem('allFiles', JSON.stringify(allFiles));
+                renderMyFileList();
+                renderAllAgentFiles();
+            }
+        };
         // 格式化文件大小
         function formatFileSize(size) {
             if (size < 1024) return size + ' B';
@@ -234,3 +311,4 @@
     </script>
 </body>
 </html>
+
