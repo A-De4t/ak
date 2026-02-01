@@ -33,22 +33,27 @@
   <script src="common.js"></script>
   <script>
     // 仅登录页专属JS（登录逻辑）
-    function login() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      // 获取所有用户数据
-      let systemUsers = getLocalData('systemUsers');
-      // 初始化超级管理员（首次登录无数据时）
-      if (systemUsers.length === 0) systemUsers = [CONFIG.SUPER_ADMIN];
-      // 验证账号密码
-      const matchUser = systemUsers.find(u => u.username === username && u.password === password);
-      if (!matchUser) {
-        alert('账号或密码错误！');
-        return;
-      }
-      // 保存当前登录用户，跳转到对应页面
-      setLocalData('currentLoginUser', [matchUser]);
-      window.location.href = matchUser.role === 'admin' ? CONFIG.ADMIN_PAGE : CONFIG.PROXY_PAGE;
+   function login() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  let systemUsers = getLocalData('systemUsers');
+  if (systemUsers.length === 0) systemUsers = [CONFIG.SUPER_ADMIN];
+  const matchUser = systemUsers.find(u => u.username === username && u.password === password);
+  
+  if (!matchUser) {
+    alert('账号或密码错误！');
+    return;
+  }
+
+  // 新增：检查用户是否被禁用
+  if (matchUser.role === 'proxy' && matchUser.status === 'disabled') {
+    alert('此账号已被禁用，无法登录！');
+    return;
+  }
+
+  setLocalData('currentLoginUser', [matchUser]);
+  window.location.href = matchUser.role === 'admin' ? CONFIG.ADMIN_PAGE : CONFIG.PROXY_PAGE;
+}
     }
   </script>
 </body>
