@@ -6,7 +6,6 @@
   <title>系统登录</title>
   <link rel="stylesheet" href="common.css">
   <style>
-    /* 极简登录样式，居中显示 */
     .login-box { width: 100%; max-width: 400px; margin: 80px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
     .login-box h2 { text-align: center; color: #2c3e50; margin: 0 0 25px; }
     .form-item { margin: 20px 0; }
@@ -33,7 +32,23 @@
 
   <script src="common.js"></script>
   <script>
-    // 页面加载先检查是否已登录，避免重复登录
+    // 配置常量
+    const CONFIG = {
+      SUPER_ADMIN: { username: 'ak', password: '2026', role: 'admin', status: 'active' },
+      ADMIN_PAGE: 'admin.html',
+      PROXY_PAGE: 'proxy.html'
+    };
+
+    // 本地存储操作封装
+    function getLocalData(key) {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    }
+    function setLocalData(key, data) {
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    // 页面加载检查登录状态
     window.onload = function() {
       const currentUser = getLocalData('currentLoginUser');
       if (currentUser && currentUser.length > 0) {
@@ -42,39 +57,47 @@
       }
     };
 
-    // 核心登录逻辑：含账号密码验证+禁用用户拦截
+    // 核心登录逻辑
     function login() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
       
-      // 非空验证
-      if (!username) { alert('请输入账号！'); return; }
-      if (!password) { alert('请输入密码！'); return; }
+      if (!username || !password) {
+        alert('请输入账号和密码！');
+        return;
+      }
 
-      // 获取系统用户数据，无数据则初始化管理员
-      let systemUsers = getLocalData('systemUsers') || [CONFIG.SUPER_ADMIN];
-      // 匹配账号密码
+      // 关键：获取并确保用户数据结构正确
+      let systemUsers = getLocalData('systemUsers');
+      // 如果本地无数据，或数据为空，初始化超级管理员
+      if (!systemUsers || systemUsers.length === 0) {
+        systemUsers = [CONFIG.SUPER_ADMIN];
+        setLocalData('systemUsers', systemUsers);
+      }
+
+      // 查找匹配的用户
       const matchUser = systemUsers.find(u => u.username === username && u.password === password);
       
-      // 账号密码错误
       if (!matchUser) {
         alert('账号或密码错误！');
         document.getElementById('password').value = '';
         return;
       }
 
-      // 关键：拦截被禁用的代理用户（管理员不拦截）
+      // 拦截被禁用的代理用户
       if (matchUser.role === 'proxy' && matchUser.status === 'disabled') {
         alert('此账号已被禁用，无法登录！');
         document.getElementById('password').value = '';
         return;
       }
 
-      // 登录成功：保存登录状态+跳转对应页面
+      // 登录成功，保存状态并跳转
       setLocalData('currentLoginUser', [matchUser]);
-      // 更新代理最后登录时间（管理员无需更新）
+      // 更新代理最后登录时间
       if (matchUser.role === 'proxy') {
-        systemUsers = systemUsers.map(u => u.username === username ? { ...u, lastLogin: new Date().toISOString() } : u);
+        systemUsers = systemUsers.map(u => 
+          u.username === username ? { ...u, lastLogin: new Date().toLocaleString() } : u
+        );
         setLocalData('systemUsers', systemUsers);
       }
       location.href = matchUser.role === 'admin' ? CONFIG.ADMIN_PAGE : CONFIG.PROXY_PAGE;
