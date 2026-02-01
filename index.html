@@ -6,16 +6,70 @@
     <title>系统登录</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
-        body { background: #f5f7fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .login-box { background: white; padding: 40px 30px; border-radius: 10px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .login-box h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 24px; }
+        body { 
+            /* 背景图设置：把图片和html放同一文件夹，替换成你的图片名（如bg.jpg/bg.png） */
+            background: url('j.jpg') no-repeat center center / cover;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px;
+        }
+        .login-box { 
+            background: rgba(255,255,255,0.9); /* 白色半透明，适配背景图 */
+            padding: 40px 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2); 
+            width: 100%; 
+            max-width: 400px;
+            backdrop-filter: blur(8px); /* 毛玻璃效果，更美观 */
+        }
+        .login-box h1 { 
+            text-align: center; 
+            color: #2c3e50; 
+            margin-bottom: 30px; 
+            font-size: 24px; 
+            font-weight: 600;
+        }
         .form-item { margin-bottom: 20px; }
-        .form-item label { display: block; color: #34495e; margin-bottom: 8px; font-size: 14px; }
-        .form-item input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; outline: none; }
-        .form-item input:focus { border-color: #3498db; box-shadow: 0 0 0 2px rgba(52,152,219,0.1); }
-        .login-btn { width: 100%; padding: 12px; background: #3498db; border: none; color: white; font-size: 16px; border-radius: 6px; cursor: pointer; transition: background 0.3s; margin-top: 10px; }
+        .form-item label { 
+            display: block; 
+            color: #34495e; 
+            margin-bottom: 8px; 
+            font-size: 14px; 
+        }
+        .form-item input { 
+            width: 100%; 
+            padding: 12px 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            font-size: 16px; 
+            outline: none; 
+            background: rgba(255,255,255,0.85);
+            transition: border 0.3s;
+        }
+        .form-item input:focus { 
+            border-color: #3498db; 
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.1); 
+        }
+        .login-btn { 
+            width: 100%; 
+            padding: 12px; 
+            background: #3498db; 
+            border: none; 
+            color: white; 
+            font-size: 16px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: background 0.3s; 
+            margin-top: 10px; 
+        }
         .login-btn:hover { background: #2980b9; }
-        .login-tip { text-align: center; color: #7f8c8d; font-size: 13px; margin-top: 20px; }
+        /* 密码框自动填充也显示圆点，不泄露 */
+        input[type="password"] {
+            -webkit-text-security: disc;
+            text-security: disc;
+        }
     </style>
 </head>
 <body>
@@ -24,21 +78,23 @@
         <form class="login-form" id="loginForm">
             <div class="form-item">
                 <label for="username">用户名</label>
-                <input type="text" id="username" placeholder="请输入用户名" required>
+                <!-- 超管账号自动填充（和下面SUPER_ADMIN保持一致） -->
+                <input type="text" id="username" placeholder="请输入用户名" required value="myadmin">
             </div>
             <div class="form-item">
                 <label for="password">密码</label>
-                <input type="password" id="password" placeholder="请输入密码" required>
+                <!-- 超管密码自动填充（和下面SUPER_ADMIN保持一致） -->
+                <input type="password" id="password" placeholder="请输入密码" required value="mypwd123456">
             </div>
             <button type="submit" class="login-btn">立即登录</button>
-        
         </form>
     </div>
 
     <script>
-        // 超级管理员兜底账号
-        const SUPER_ADMIN = { username: 'ak', password: '201652', role: 'ak' };
-        // 从本地缓存获取用户列表
+        // ✅ 重点：修改这一行！设置你自己的超级管理员账号密码
+        const SUPER_ADMIN = { username: 'ak', password: '201652', role: 'admin' };
+        
+        // 从本地缓存获取用户列表，无则用自定义超管
         const systemUsers = JSON.parse(localStorage.getItem('systemUsers')) || [SUPER_ADMIN];
         const loginForm = document.getElementById('loginForm');
 
@@ -47,21 +103,21 @@
             const inputUser = document.getElementById('username').value.trim();
             const inputPwd = document.getElementById('password').value.trim();
             // 匹配账号密码
-            const matchUser = systemUsers.find(user => user.username === inputUser && user.password === inputPwd);
+            const matchUser = systemUsers.find(user => 
+                user.username === inputUser && user.password === inputPwd
+            );
 
             if (matchUser) {
-                // 存储当前登录用户信息（核心：用于后续页面识别身份/隔离文件）
                 localStorage.setItem('currentLoginUser', JSON.stringify(matchUser));
                 alert(`登录成功！欢迎${matchUser.role === 'admin' ? '超级管理员' : '代理'}【${matchUser.username}】`);
-                // 核心逻辑：根据身份自动跳转对应页面
-                if (matchUser.role === 'admin') {
-                    window.location.href = 'admin.html'; // 管理员→全功能后台
-                } else {
-                    window.location.href = 'proxy.html'; // 代理→专属平台
-                }
+                // 身份自动分流
+                window.location.href = matchUser.role === 'admin' ? 'admin.html' : 'proxy.html';
             } else {
                 alert('账号或密码错误，请重新输入！');
                 loginForm.reset();
+                // 重置后重新填充超管账号密码
+                document.getElementById('username').value = SUPER_ADMIN.username;
+                document.getElementById('password').value = SUPER_ADMIN.password;
             }
         });
     </script>
