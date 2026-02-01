@@ -31,13 +31,13 @@
                 <input type="password" id="password" placeholder="请输入密码" required>
             </div>
             <button type="submit" class="login-btn">立即登录</button>
-            <p class="login-tip">初始超级管理员：admin / 123456</p >
+        
         </form>
     </div>
 
     <script>
         // 超级管理员兜底账号
-        const SUPER_ADMIN = { username: 'admin', password: '123456', role: 'admin' };
+        const SUPER_ADMIN = { username: 'default', password: '201652', role: 'admin' };
         // 从本地缓存获取用户列表
         const systemUsers = JSON.parse(localStorage.getItem('systemUsers')) || [SUPER_ADMIN];
         const loginForm = document.getElementById('loginForm');
