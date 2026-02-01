@@ -3,64 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- 1. 改标题：对应新页面名称 -->
-  <title>帮助中心</title>
-  <!-- 2. 引入公共样式（一行搞定，共用所有按钮/卡片/布局样式） -->
+  <title>代理提现</title>
   <link rel="stylesheet" href="common.css">
   <style>
-    /* 3. 仅新页面的专属样式（没有就留空，比如帮助中心的内容间距） */
-    /* 示例：给帮助内容加个间距，公共样式没有的才在这写 */
-    .help-content {
-      line-height: 2;
-      font-size: 15px;
-    }
+    .withdraw-form { max-width: 500px; margin: 0 auto; }
   </style>
 </head>
 <body>
-  <!-- 4. 页面头部（和后台/代理页风格统一，保留退出按钮） -->
   <div class="page-header">
-    <!-- 改标题：对应新页面名称，显示当前登录用户名 -->
-    <h1>帮助中心 - <span id="userName"></span></h1>
-    <!-- 直接用公共JS的logout函数，不用重写退出逻辑 -->
+    <h1>代理提现 - <span id="proxyName"></span></h1>
     <button class="btn-danger" onclick="logout()">安全退出</button>
   </div>
 
-  <!-- 5. 页面核心内容（自己填！文字/按钮/表单/图片都放这） -->
-  <div class="card" style="max-width: 800px; margin: 0 auto;">
-    <h3>新手使用指南</h3>
-    <div class="help-content">
-      <p>1. 代理如何上传文件？登录后在个人中心点击「文件上传」...</p>
-      <p>2. 如何查看推广数据？进入「数据统计」页查看...</p>
-      <p>3. 提现申请流程：点击「提现页」→ 填写金额 → 提交审核...</p>
+  <div class="card withdraw-form">
+    <h3>提现申请</h3>
+    <div class="form-group">
+      <label>可用余额（元）</label>
+      <input type="text" value="999.00" readonly>
     </div>
-    <!-- 现成的公共按钮样式，直接用 -->
-    <button class="btn" style="margin-top: 20px;">联系客服</button>
+    <div class="form-group">
+      <label>提现金额（元）</label>
+      <input type="number" id="withdrawMoney" placeholder="请输入提现金额" min="1" required>
+    </div>
+    <div class="form-group">
+      <label>收款微信</label>
+      <input type="text" id="wechat" placeholder="请输入收款微信" required>
+    </div>
+    <button class="btn" style="width: 100%;" onclick="submitWithdraw()">提交提现申请</button>
+    <p class="tip" style="color: #e74c3c; margin-top: 10px;">⚠️ 提现申请审核时间为24小时，到账以实际为准</p>
   </div>
 
-  <!-- 6. 引入公共JS（一行搞定，共用权限验证/退出/本地存储逻辑） -->
   <script src="common.js"></script>
   <script>
-    // 7. 权限验证（关键！控制谁能访问这个页面，二选一即可）
-    // 👉 选项A：所有人可访问（管理员+代理）
-    const currentUser = JSON.parse(localStorage.getItem('currentLoginUser'))[0] || null;
-    if (!currentUser) { alert('请先登录！'); window.location.href = CONFIG.LOGIN_PAGE; }
+    // 仅代理可访问该页面
+    const currentUser = checkAuth('proxy');
+    if (!currentUser) return;
+    document.getElementById('proxyName').innerText = currentUser.username;
 
-    // 👉 选项B：仅代理可访问（和proxy.html一样）
-    // const currentUser = checkAuth('proxy');
-    // if (!currentUser) return;
-
-    // 👉 选项C：仅管理员可访问（和admin.html一样）
-    // const currentUser = checkAuth('admin');
-    // if (!currentUser) return;
-
-    // 8. 显示当前登录的用户名（和其他页面统一）
-    document.getElementById('userName').innerText = currentUser.username;
-
-    // 9. 新页面的专属JS逻辑（没有就留空，比如帮助中心的搜索功能）
-    // 示例：新增一个搜索帮助的函数
-    // function searchHelp() {
-    //   // 你的专属逻辑
-    // }
+    // 提现申请专属逻辑
+    function submitWithdraw() {
+      const money = document.getElementById('withdrawMoney').value;
+      const wechat = document.getElementById('wechat').value.trim();
+      if (!money || !wechat) {
+        alert('请填写完整提现信息！');
+        return;
+      }
+      if (money < 1) {
+        alert('提现金额不能小于1元！');
+        return;
+      }
+      alert(`提现申请提交成功！已申请提现${money}元，将发送至微信${wechat}`);
+      // 这里可以加保存提现记录的逻辑，用setLocalData
+    }
   </script>
 </body>
 </html>
