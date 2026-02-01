@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代理专属操作平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { background: #f5f7fa; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .proxy-header { display: flex; justify-content: space-between; align-items: center; background: #f39c12; color: white; padding: 15px 30px; border-radius: 8px; margin-bottom: 30px; width: 100%; max-width: 600px; }
+        .proxy-header button { background: #e74c3c; border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
+        .proxy-header button:hover { background: #c0392b; }
+        .proxy-card { background: white; padding: 40px 30px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        .proxy-card h2 { color: #34495e; text-align: center; margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .upload-box { border: 2px dashed #f39c12; border-radius: 8px; padding: 50px 20px; text-align: center; margin: 20px 0; cursor: pointer; transition: border-color 0.3s; }
+        .upload-box:hover { border-color: #e67e22; }
+        .upload-box input { display: none; }
+        .upload-box span { color: #7f8c8d; font-size: 14px; margin-top: 10px; display: block; }
+        .btn { background: #f39c12; border: none; color: white; padding: 12px 30px; border-radius: 6px; cursor: pointer; transition: background 0.3s; font-size: 16px; margin: 0 auto; display: block; }
+        .btn:hover { background: #e67e22; }
+        .tip { color: #7f8c8d; font-size: 14px; text-align: center; margin-top: 20px; }
+        .file-list { margin-top: 40px; max-height: 300px; overflow-y: auto; padding-right: 10px; }
+        .file-list h3 { color: #34495e; margin-bottom: 15px; font-size: 18px; }
+        .file-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f8f9fa; border-radius: 6px; margin-bottom: 10px; }
+        .file-item div { display: flex; flex-direction: column; }
+        .file-item span { font-size: 15px; }
+        .file-item small { color: #7f8c8d; font-size: 12px; margin-top: 5px; }
+        .file-item a { color: #f39c12; text-decoration: none; margin-right: 15px; }
+        .file-item a:hover { text-decoration: underline; }
+        .btn-danger { background: #e74c3c; padding: 6px 12px; font-size: 14px; border: none; color: white; border-radius: 4px; cursor: pointer; }
+        .btn-danger:hover { background: #c0392b; }
+        .empty-tip { color: #7f8c8d; text-align: center; padding: 40px 0; font-size: 15px; }
+    </style>
+</head>
+<body>
+    <!-- 头部：显示代理用户名 + 退出 -->
+    <div class="proxy-header">
+        <h2>代理专属操作平台 - <span id="proxyName">---</span></h2>
+        <button id="logoutBtn">安全退出</button>
+    </div>
+
+    <div class="proxy-card">
+        <h2>我的文件管理</h2>
+        <!-- 代理文件上传 -->
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label class="upload-box" id="uploadBox">
+                📤 点击选择要上传的文件
+                <span>支持任意格式 | 单文件最大100MB | 仅自己可见</span>
+                <input type="file" name="file" id="fileInput" multiple>
+            </label>
+            <button type="submit" class="btn">开始上传</button>
+            <p class="tip">✅ 上传的文件仅你可查看/操作，其他代理不可见</p >
+        </form>
+
+        <!-- 代理自己的文件列表 -->
+        <div class="file-list">
+            <h3>我的已上传文件</h3>
+            <div id="fileListContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        // 配置：退出返回登录页
+        const LOGIN_PAGE = 'index.html';
+        // 获取当前登录代理用户+所有文件
+        let currentUser = JSON.parse(localStorage.getItem('currentLoginUser'));
+        let allFiles = JSON.parse(localStorage.getItem('allFiles')) || {};
+        // 初始化当前代理的文件容器
+        if (!allFiles[currentUser.username]) allFiles[currentUser.username] = [];
+
+        // 页面初始化：验证是否为代理，非代理/未登录跳回登录页
+        window.onload = function() {
+            if (!currentUser || currentUser.role !== 'proxy') {
+                alert('无代理权限，禁止访问！');
+                window.location.href = LOGIN_PAGE;
+                return;
+            }
+            // 显示当前代理用户名
+            document.getElementById('proxyName').innerText = currentUser.username;
+            renderMyFileList(); // 渲染自己的文件
+        }
+
+        // 退出登录：清空当前用户信息
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('确定退出代理平台吗？')) {
+                localStorage.removeItem('currentLoginUser');
+                window.location.href = LOGIN_PAGE;
+            }
+        });
+
+        // 代理文件上传：仅存储到自己的文件目录
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const uploadForm = document.getElementById('uploadForm');
+        uploadBox.addEventListener('click', () => fileInput.click());
+        // 显示选择的文件名
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                let fileName = this.files.length === 1 ? this.files[0].name : `共选择${this.files.length}个文件`;
+                uploadBox.innerHTML = `✅ 已选择：${fileName}<br><span>可重新点击选择文件</span>`;
+            }
+        });
+        // 上传逻辑
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const files = fileInput.files;
+            if (files.length === 0) { alert('请先选择要上传的文件！'); return; }
+            // 遍历上传，仅关联当前代理用户名
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                allFiles[currentUser.username].unshift({
+                    id: Date.now() + i,
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    url: URL.createObjectURL(file),
+                    time: new Date().toLocaleString()
+                });
+            }
+            // 保存到本地缓存
+            localStorage.setItem('allFiles', JSON.stringify(allFiles));
+            alert(`成功上传${files.length}个文件！`);
+            uploadForm.reset();
+            uploadBox.innerHTML = `📤 点击选择要上传的文件<br><span>支持任意格式 | 单文件最大100MB | 仅自己可见</span>`;
+            renderMyFileList();
+        });
+
+        // 渲染当前代理自己的文件（仅能看到自己的）
+        function renderMyFileList() {
+            const container = document.getElementById('fileListContainer');
+            const myFiles = allFiles[currentUser.username];
+            if (myFiles.length === 0) {
+                container.innerHTML = '<p class="empty-tip">你还未上传任何文件，点击上方上传吧～</p >';
+                return;
+            }
+            let fileHtml = '';
+            myFiles.forEach(file => {
+                fileHtml += `
+                    <div class="file-item">
+                        <div>
+                            <span>${file.name}</span>
+                            <small>${file.size} | 上传时间：${file.time}</small>
+                        </div>
+                        <div>
+                            <a href=" " target="_blank">打开/下载</a >
+                            <button class="btn-danger" onclick="deleteMyFile(${file.id})">删除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = fileHtml;
+        }
+
+        // 代理删除自己的文件（仅能删自己的）
+        window.deleteMyFile = function(fileId) {
+            if (confirm('确定删除该文件吗？删除后不可恢复！')) {
+                allFiles[currentUser.username] = allFiles[currentUser.username].filter(file => file.id !== fileId);
+                localStorage.setItem('allFiles', JSON.stringify(allFiles));
+                renderMyFileList();
+            }
+        }
+
+        // 格式化文件大小
+        function formatFileSize(size) {
+            if (size < 1024) return size + ' B';
+            if (size < 1024 * 1024) return (size / 1024).toFixed(2) + ' KB';
+            return (size / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+    </script>
+</body>
+</html>
