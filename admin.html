@@ -6,7 +6,6 @@
   <title>管理员后台</title>
   <link rel="stylesheet" href="common.css">
   <style>
-    /* 极简核心样式 - 加载快、布局稳 */
     .admin-box { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding: 20px; min-height: 80vh; }
     .left-menu { background: #2c3e50; border-radius: 8px; padding: 20px; }
     .left-menu h3 { color: white; margin: 0 0 20px; padding-bottom: 10px; border-bottom: 1px solid #444; }
@@ -32,18 +31,15 @@
     .empty-tip { color: #999; padding: 30px 0; text-align: center; }
     .status-on { color: #27ae60; font-weight: 500; }
     .status-off { color: #e74c3c; font-weight: 500; }
-    /* 小屏适配 */
     @media (max-width: 768px) { .admin-box { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
-  <!-- 顶部头部：登录名+退出 -->
   <div class="page-header" style="padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
     <h2>管理员后台 - <span id="adminName">ak</span></h2>
     <button class="btn-danger" onclick="logout()" style="width: auto; padding: 6px 12px;">安全退出</button>
   </div>
 
-  <!-- 核心布局：左侧菜单+右侧内容（点击必切换，无卡顿） -->
   <div class="admin-box">
     <div class="left-menu">
       <h3>管理菜单</h3>
@@ -55,7 +51,6 @@
     </div>
 
     <div class="right-content">
-      <!-- 1. 数据概览：实时统计，操作后自动更新 -->
       <div class="panel show" id="panel1">
         <h2>数据概览</h2>
         <div class="stat-card"><div class="num" id="t1">0</div><div>总代理数</div></div>
@@ -64,17 +59,15 @@
         <div class="stat-card"><div class="num" id="t4">0</div><div>操作日志数</div></div>
       </div>
 
-      <!-- 2. 代理数据：禁用/启用/重置/删除 全可用 -->
       <div class="panel" id="panel2">
         <h2>代理数据</h2>
         <input type="text" placeholder="搜索用户名" oninput="filterProxy()" style="padding: 8px; width: 250px; margin-bottom: 10px;">
         <table class="table-simple" id="proxyTable">
-          <thead><tr><th>序号</th><th>用户名</th><th>状态</th><th>操作</th></tr></thead>
-          <tbody><tr><td colspan="4" class="empty-tip">暂无代理数据</td></tr></tbody>
+          <thead><tr><th>序号</th><th>用户名</th><th>状态</th><th>最后登录</th><th>操作</th></tr></thead>
+          <tbody><tr><td colspan="5" class="empty-tip">暂无代理数据</td></tr></tbody>
         </table>
       </div>
 
-      <!-- 3. 添加代理：输入框必出，提交必成功 -->
       <div class="panel" id="panel3">
         <h2>添加代理账号</h2>
         <div class="form-item">
@@ -88,7 +81,6 @@
         <button class="btn" onclick="addProxy()">确认添加代理</button>
       </div>
 
-      <!-- 4. 文件管理：查看/删除 文件全可用 -->
       <div class="panel" id="panel4">
         <h2>文件管理</h2>
         <input type="text" placeholder="搜索代理/文件名" oninput="filterFile()" style="padding: 8px; width: 250px; margin-bottom: 10px;">
@@ -98,7 +90,6 @@
         </table>
       </div>
 
-      <!-- 5. 系统日志：所有操作自动记录，不遗漏 -->
       <div class="panel" id="panel5">
         <h2>系统日志</h2>
         <table class="table-simple" id="logTable">
@@ -111,20 +102,46 @@
 
   <script src="common.js"></script>
   <script>
-    // 1. 权限验证：非管理员直接跳登录页
+    // 配置常量
+    const CONFIG = {
+      SUPER_ADMIN: { username: 'ak', password: '2026', role: 'admin', status: 'active' },
+      ADMIN_PAGE: 'admin.html',
+      PROXY_PAGE: 'proxy.html'
+    };
+
+    // 本地存储操作封装
+    function getLocalData(key) {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : null;
+    }
+    function setLocalData(key, data) {
+      localStorage.setItem(key, JSON.stringify(data));
+    }
+
+    // 权限验证
+    function checkAuth(role) {
+      const user = getLocalData('currentLoginUser');
+      return user && user.length > 0 && user[0].role === role ? user[0] : null;
+    }
+    function logout() {
+      localStorage.removeItem('currentLoginUser');
+      location.href = 'index.html';
+    }
+
+    // 初始化
     const currentUser = checkAuth('admin');
     if (!currentUser) location.href = 'index.html';
     document.getElementById('adminName').innerText = currentUser.username;
 
-    // 2. 初始化本地存储数据（刷新不丢失）
-    let sysUser = getLocalData('systemUsers') || [CONFIG.SUPER_ADMIN];
+    // 确保数据结构正确
+    let sysUser = getLocalData('systemUsers');
+    if (!sysUser || sysUser.length === 0) sysUser = [CONFIG.SUPER_ADMIN];
     let sysFile = getLocalData('allFiles') || {};
     let sysLog = getLocalData('systemLogs') || [];
 
-    // 页面加载完成后初始化所有数据
     window.onload = () => { initAll(); };
 
-    // 🔴 核心：菜单切换（100%稳定，点击必显）
+    // 菜单切换
     function showPanel(panelId) {
       document.querySelectorAll('.left-menu a').forEach(a => a.classList.remove('active'));
       document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
@@ -132,34 +149,37 @@
       document.getElementById(panelId).classList.add('show');
     }
 
-    // 🔴 修复1：添加代理（验证+提示+自动跳转，无报错）
+    // 添加代理
     function addProxy() {
       const name = document.getElementById('proxyName').value.trim();
       const pwd = document.getElementById('proxyPwd').value.trim();
-      if (!name) { alert('请输入代理用户名！'); return; }
-      if (!pwd) { alert('请输入代理密码！'); return; }
-      if (sysUser.some(u => u.username === name)) { alert('该用户名已存在，请更换！'); return; }
-      // 添加新代理并初始化文件目录
-      sysUser.push({ username: name, password: pwd, role: 'proxy', status: 'active', lastLogin: '暂无登录' });
+      if (!name || !pwd) { alert('请填写完整信息！'); return; }
+      if (sysUser.some(u => u.username === name)) { alert('用户名已存在！'); return; }
+      
+      sysUser.push({ 
+        username: name, 
+        password: pwd, 
+        role: 'proxy', 
+        status: 'active', 
+        lastLogin: '暂无登录' 
+      });
       sysFile[name] = [];
-      // 保存数据+记录日志+刷新页面
       saveAllData();
       addLog(`添加代理【${name}】`);
       initAll();
-      // 重置表单+提示+自动切到代理数据查看
       document.getElementById('proxyName').value = '';
       document.getElementById('proxyPwd').value = '';
       alert(`代理【${name}】添加成功！`);
       showPanel('panel2');
     }
 
-    // 🔴 修复2：禁用/启用代理（点击必反应，状态实时变，带提示）
+    // 切换代理状态
     function toggleProxy(name) {
       const proxy = sysUser.find(u => u.username === name);
       if (!proxy) return;
       const oldStatus = proxy.status;
       const newStatus = oldStatus === 'active' ? 'disabled' : 'active';
-      // 切换状态
+      
       sysUser = sysUser.map(u => u.username === name ? { ...u, status: newStatus } : u);
       saveAllData();
       addLog(`${oldStatus === 'active' ? '禁用' : '启用'}代理【${name}】`);
@@ -167,67 +187,64 @@
       alert(`代理【${name}】已${oldStatus === 'active' ? '禁用' : '启用'}！`);
     }
 
-    // 🔴 修复3：重置代理密码（验证+提示+日志，无报错）
+    // 重置密码
     function resetPwd(name) {
       const newPwd = prompt(`请输入代理【${name}】的新密码：`, '123456');
-      if (newPwd === null) return; // 取消输入不执行
-      const pwd = newPwd.trim();
-      if (!pwd) { alert('密码不能为空！'); return; }
-      // 修改密码
-      sysUser = sysUser.map(u => u.username === name ? { ...u, password: pwd } : u);
+      if (newPwd === null || !newPwd.trim()) return;
+      
+      sysUser = sysUser.map(u => u.username === name ? { ...u, password: newPwd.trim() } : u);
       saveAllData();
       addLog(`重置代理【${name}】密码`);
       initAll();
-      alert(`代理【${name}】密码重置成功！新密码：${pwd}`);
+      alert(`代理【${name}】密码重置成功！`);
     }
 
-    // 🔴 修复4：删除代理（二次确认+删除文件+日志，防误删）
+    // 删除代理
     function delProxy(name) {
-      if (!confirm(`确定要删除代理【${name}】吗？\n删除后将同步清除该代理的所有文件数据！`)) return;
+      if (!confirm(`确定删除代理【${name}】及所有文件吗？`)) return;
+      
       sysUser = sysUser.filter(u => u.username !== name);
-      delete sysFile[name]; // 同步删除代理文件
+      delete sysFile[name];
       saveAllData();
-      addLog(`删除代理【${name}】及所有文件`);
+      addLog(`删除代理【${name}】`);
       initAll();
       alert(`代理【${name}】已删除！`);
     }
 
-    // 🔴 修复5：删除文件（二次确认+日志+刷新，无报错）
+    // 删除文件
     function delFile(agentName, fileId) {
-      if (!confirm('确定要删除该文件吗？删除后无法恢复！')) return;
+      if (!confirm('确定删除该文件吗？')) return;
+      
       sysFile[agentName] = sysFile[agentName].filter(f => f.id !== fileId);
       saveAllData();
-      addLog(`删除代理【${agentName}】的文件（ID：${fileId}）`);
+      addLog(`删除【${agentName}】的文件`);
       initAll();
-      alert('文件已成功删除！');
+      alert('文件已删除！');
     }
 
-    // 📊 初始化所有数据：统计+表格渲染（一键刷新）
+    // 初始化数据与渲染
     function initAll() {
-      // 更新数据概览统计
       const allProxy = sysUser.filter(u => u.role === 'proxy');
       const activeProxy = allProxy.filter(u => u.status === 'active').length;
       let totalFile = 0;
-      Object.values(sysFile).forEach(files => totalFile += files.length);
+      Object.values(sysFile).forEach(f => totalFile += f.length);
+      
       document.getElementById('t1').innerText = allProxy.length;
       document.getElementById('t2').innerText = activeProxy;
       document.getElementById('t3').innerText = totalFile;
       document.getElementById('t4').innerText = sysLog.length;
 
-      // 渲染代理表格
       renderProxyTable();
-      // 渲染文件表格
       renderFileTable();
-      // 渲染系统日志表格
       renderLogTable();
     }
 
-    // 📋 渲染代理表格（带状态区分，按钮样式优化）
+    // 渲染表格
     function renderProxyTable() {
       const allProxy = sysUser.filter(u => u.role === 'proxy');
       const tb = document.querySelector('#proxyTable tbody');
       if (allProxy.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无代理数据，先添加代理吧~</td></tr>';
+        tb.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无代理数据</td></tr>';
         return;
       }
       tb.innerHTML = allProxy.map((u, i) => `
@@ -235,6 +252,7 @@
           <td>${i+1}</td>
           <td>${u.username}</td>
           <td class="${u.status==='active'?'status-on':'status-off'}">${u.status==='active'?'已启用':'已禁用'}</td>
+          <td>${u.lastLogin || '暂无登录'}</td>
           <td>
             <button class="btn-sm btn-toggle" onclick="toggleProxy('${u.username}')">${u.status==='active'?'禁用':'启用'}</button>
             <button class="btn-sm btn-reset" onclick="resetPwd('${u.username}')">重置密码</button>
@@ -244,80 +262,63 @@
       `).join('');
     }
 
-    // 📋 渲染文件表格（查看+删除，链接正常打开）
     function renderFileTable() {
-      let allFileList = [];
-      Object.keys(sysFile).forEach(agent => {
-        sysFile[agent].forEach(file => allFileList.push({ agent, ...file }));
-      });
+      let files = [];
+      Object.keys(sysFile).forEach(a => sysFile[a].forEach(f => files.push({a, ...f})));
       const tb = document.querySelector('#fileTable tbody');
-      if (allFileList.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无文件数据，代理上传后可查看~</td></tr>';
+      if (files.length === 0) {
+        tb.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无文件数据</td></tr>';
         return;
       }
-      tb.innerHTML = allFileList.map((f, i) => `
+      tb.innerHTML = files.map((f, i) => `
         <tr>
           <td>${i+1}</td>
-          <td>${f.agent}</td>
+          <td>${f.a}</td>
           <td>${f.name}</td>
           <td>
-            <a href="${f.url || '#'}" target="_blank" style="color:#3498db; text-decoration: none; margin-right: 8px;">查看</a>
-            <a href="javascript:;" onclick="delFile('${f.agent}', ${f.id})" style="color:red; text-decoration: none;">删除</a>
+            <a href="${f.url || '#'}" target="_blank" style="color:#3498db;">查看</a> | 
+            <a href="javascript:;" onclick="delFile('${f.a}',${f.id})" style="color:red;">删除</a>
           </td>
         </tr>
       `).join('');
     }
 
-    // 📋 渲染系统日志表格（倒序显示，最新操作在最前）
     function renderLogTable() {
       const tb = document.querySelector('#logTable tbody');
       if (sysLog.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无操作日志，执行操作后自动记录~</td></tr>';
+        tb.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无操作日志</td></tr>';
         return;
       }
-      // 倒序渲染，最新操作在最上面
       tb.innerHTML = sysLog.reverse().map((l, i) => `
-        <tr>
-          <td>${i+1}</td>
-          <td>${l.time}</td>
-          <td>${l.operator}</td>
-          <td>${l.type}</td>
-        </tr>
+        <tr><td>${i+1}</td><td>${l.time}</td><td>${l.operator}</td><td>${l.type}</td></tr>
       `).join('');
     }
 
-    // 🔍 筛选代理（实时输入，精准筛选）
+    // 筛选功能
     function filterProxy() {
-      const keyword = document.querySelector('#panel2 input').value.toLowerCase().trim();
-      document.querySelectorAll('#proxyTable tbody tr').forEach(row => {
-        const uname = row.cells[1].textContent.toLowerCase();
-        row.style.display = uname.includes(keyword) ? '' : 'none';
+      const k = document.querySelector('#panel2 input').value.toLowerCase();
+      document.querySelectorAll('#proxyTable tbody tr').forEach(r => {
+        r.style.display = r.cells[1].textContent.toLowerCase().includes(k) ? '' : 'none';
       });
     }
-
-    // 🔍 筛选文件（代理名/文件名，双重筛选）
     function filterFile() {
-      const keyword = document.querySelector('#panel4 input').value.toLowerCase().trim();
-      document.querySelectorAll('#fileTable tbody tr').forEach(row => {
-        const agent = row.cells[1].textContent.toLowerCase();
-        const fname = row.cells[2].textContent.toLowerCase();
-        row.style.display = agent.includes(keyword) || fname.includes(keyword) ? '' : 'none';
+      const k = document.querySelector('#panel4 input').value.toLowerCase();
+      document.querySelectorAll('#fileTable tbody tr').forEach(r => {
+        r.style.display = (r.cells[1].textContent.includes(k) || r.cells[2].textContent.includes(k)) ? '' : 'none';
       });
     }
 
-    // 💾 保存所有数据到本地存储（统一方法，避免遗漏）
+    // 数据保存与日志
     function saveAllData() {
       setLocalData('systemUsers', sysUser);
       setLocalData('allFiles', sysFile);
       setLocalData('systemLogs', sysLog);
     }
-
-    // 📝 添加系统日志（统一格式，自动记录时间/操作人）
-    function addLog(operType) {
+    function addLog(type) {
       sysLog.push({
         time: new Date().toLocaleString(),
         operator: currentUser.username,
-        type: operType
+        type: type
       });
       saveAllData();
     }
