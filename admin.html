@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>网站管理后台</title>
+    <title>管理员登录</title>
     <style>
         * {
             margin: 0;
@@ -13,384 +13,118 @@
         }
         body {
             background-color: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
             padding: 20px;
-            /* 整体居中核心样式 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #2c3e50;
-            color: white;
-            padding: 15px 30px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            width: 100%;
-            max-width: 1000px;
-        }
-        .admin-header button {
-            background: #e74c3c;
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        .admin-header button:hover {
-            background: #c0392b;
-        }
-        .admin-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            width: 100%;
-            max-width: 1000px;
-        }
-        .admin-card {
+        .login-box {
             background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
         }
-        .admin-card h2 {
-            color: #34495e;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            font-size: 20px;
-        }
-        .upload-box {
-            border: 2px dashed #bdc3c7;
-            border-radius: 8px;
-            padding: 40px 20px;
+        .login-box h1 {
             text-align: center;
-            margin: 20px 0;
-            cursor: pointer;
-            transition: border-color 0.3s;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 24px;
         }
-        .upload-box:hover {
+        .login-form .form-item {
+            margin-bottom: 20px;
+        }
+        .login-form label {
+            display: block;
+            color: #34495e;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .login-form input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+        .login-form input:focus {
             border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52,152,219,0.1);
         }
-        .upload-box input {
-            display: none;
-        }
-        .btn {
+        .login-btn {
+            width: 100%;
+            padding: 12px;
             background: #3498db;
             border: none;
             color: white;
-            padding: 10px 25px;
-            border-radius: 4px;
-            cursor: pointer;
             font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
             transition: background 0.3s;
-            margin-top: 15px;
+            margin-top: 10px;
         }
-        .btn:hover {
+        .login-btn:hover {
             background: #2980b9;
         }
-        .btn-danger {
-            background: #e74c3c;
-            padding: 6px 12px;
-            font-size: 14px;
-        }
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-        .tip {
-            color: #7f8c8d;
-            font-size: 14px;
-            margin-top: 15px;
-        }
-        /* 文件列表样式 */
-        .file-list, .user-list {
-            margin-top: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        .file-item, .user-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        }
-        .file-item div, .user-item div {
-            display: flex;
-            flex-direction: column;
-        }
-        .file-item small, .user-item small {
-            color: #7f8c8d;
-            font-size: 12px;
-            margin-top: 5px;
-        }
-        .file-item a {
-            color: #3498db;
-            text-decoration: none;
-            margin-right: 10px;
-        }
-        .file-item a:hover {
-            text-decoration: underline;
-        }
-        /* 用户添加表单 */
-        .user-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-top: 20px;
-        }
-        .user-form input, .user-form select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .user-role {
-            color: #27ae60;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .role-proxy {
-            color: #f39c12;
-        }
-        /* 空状态样式 */
-        .empty-tip {
-            color: #7f8c8d;
+        .login-tip {
             text-align: center;
-            padding: 30px 0;
-            font-size: 14px;
-        }
-        /* 响应式适配 */
-        @media (max-width: 768px) {
-            .admin-container {
-                grid-template-columns: 1fr;
-            }
+            color: #7f8c8d;
+            font-size: 13px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <!-- 后台头部 - 居中 -->
-    <div class="admin-header">
-        <h1>网站管理后台</h1>
-        <button id="logoutBtn">退出登录</button>
-    </div>
-
-    <!-- 核心内容：文件管理 + 用户管理 双卡片布局 -->
-    <div class="admin-container">
-        <!-- 左侧：文件上传管理（含删除功能） -->
-        <div class="admin-card">
-            <h2>文件管理</h2>
-            <form id="uploadForm" enctype="multipart/form-data">
-                <label class="upload-box" id="uploadBox">
-                    点击选择文件<br>
-                    <span>支持任意格式，单文件建议不超过100MB</span>
-                    <input type="file" name="file" id="fileInput" multiple>
-                </label>
-                <button type="submit" class="btn">开始上传</button>
-                <p class="tip">✅ 文件实际保存至本地，刷新不丢失</p >
-            </form>
-
-            <div class="file-list">
-                <h3>已上传文件</h3>
-                <div id="fileListContainer"></div>
+    <div class="login-box">
+        <h1>系统管理登录</h1>
+        <form class="login-form" id="loginForm">
+            <div class="form-item">
+                <label for="username">用户名</label>
+                <input type="text" id="username" placeholder="请输入用户名" required>
             </div>
-        </div>
-
-        <!-- 右侧：用户管理（新增/删除/权限分配） -->
-        <div class="admin-card">
-            <h2>用户管理</h2>
-            <p class="tip">✅ 可添加代理账号，分配「管理员/代理」权限</p >
-            <!-- 添加用户表单 -->
-            <form id="addUserForm" class="user-form">
-                <input type="text" id="newUsername" placeholder="请输入用户名" required>
-                <input type="password" id="newPassword" placeholder="请输入密码" required>
-                <select id="newRole" required>
-                    <option value="">请选择用户权限</option>
-                    <option value="admin">管理员（全部权限）</option>
-                    <option value="proxy">代理（仅文件操作）</option>
-                </select>
-                <button type="submit" class="btn">添加用户</button>
-            </form>
-
-            <div class="user-list">
-                <h3>用户列表</h3>
-                <div id="userListContainer"></div>
+            <div class="form-item">
+                <label for="password">密码</label>
+                <input type="password" id="password" placeholder="请输入密码" required>
             </div>
-        </div>
+            <button type="submit" class="login-btn">立即登录</button>
+            <p class="login-tip">初始账号：admin | 初始密码：123456</p >
+        </form>
     </div>
 
     <script>
-        // ************************** 基础配置 **************************
-        // 退出登录：修改此处为你的登录页文件名（如login.html）
-        const LOGIN_PAGE = 'index.html';
-        // 超级管理员（初始账号，不可删除）
+        // 登录核心逻辑：匹配本地缓存的所有用户（管理员/代理）
+        const loginForm = document.getElementById('loginForm');
+        // 超级管理员初始账号（兜底，无缓存时可用）
         const SUPER_ADMIN = { username: 'admin', password: '123456', role: 'admin' };
+        // 从本地缓存获取用户列表，无缓存则使用初始账号
+        const systemUsers = JSON.parse(localStorage.getItem('systemUsers')) || [SUPER_ADMIN];
 
-        // ************************** 本地缓存数据 **************************
-        // 已上传文件（刷新不丢）
-        let uploadedFiles = JSON.parse(localStorage.getItem('uploadedFiles')) || [];
-        // 系统用户（含初始管理员，刷新不丢）
-        let systemUsers = JSON.parse(localStorage.getItem('systemUsers')) || [SUPER_ADMIN];
-
-        // ************************** 页面初始化 **************************
-        window.onload = function() {
-            renderFileList(); // 渲染文件列表
-            renderUserList(); // 渲染用户列表
-        }
-
-        // ************************** 退出登录功能 **************************
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            if (confirm('确定要退出管理员后台吗？')) {
-                window.location.href = LOGIN_PAGE;
-            }
-        });
-
-        // ************************** 文件管理功能（上传+删除+预览） **************************
-        const uploadBox = document.getElementById('uploadBox');
-        const fileInput = document.getElementById('fileInput');
-        const uploadForm = document.getElementById('uploadForm');
-        const fileListContainer = document.getElementById('fileListContainer');
-
-        // 点击选择文件
-        uploadBox.addEventListener('click', () => fileInput.click());
-        // 显示选择的文件名
-        fileInput.addEventListener('change', function() {
-            if (this.files.length > 0) {
-                let fileName = this.files.length === 1 ? this.files[0].name : `共选择${this.files.length}个文件`;
-                uploadBox.innerHTML = `已选择：${fileName}<br><span>可重新点击选择</span>`;
-            }
-        });
-        // 文件上传
-        uploadForm.addEventListener('submit', async function(e) {
+        loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const files = fileInput.files;
-            if (files.length === 0) {
-                alert('请先选择要上传的文件！');
-                return;
-            }
-            // 遍历上传
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const fileUrl = URL.createObjectURL(file);
-                const fileInfo = {
-                    id: Date.now() + i, // 唯一ID用于删除
-                    name: file.name,
-                    size: formatFileSize(file.size),
-                    url: fileUrl,
-                    time: new Date().toLocaleString()
-                };
-                uploadedFiles.unshift(fileInfo);
-            }
-            // 保存缓存+刷新列表+重置表单
-            localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
-            alert(`成功上传${files.length}个文件！`);
-            uploadForm.reset();
-            uploadBox.innerHTML = `点击选择文件<br><span>支持任意格式，单文件建议不超过100MB</span>`;
-            renderFileList();
-        });
-        // 格式化文件大小
-        function formatFileSize(size) {
-            if (size < 1024) return size + ' B';
-            if (size < 1024 * 1024) return (size / 1024).toFixed(2) + ' KB';
-            return (size / (1024 * 1024)).toFixed(2) + ' MB';
-        }
-        // 渲染文件列表
-        function renderFileList() {
-            if (uploadedFiles.length === 0) {
-                fileListContainer.innerHTML = '<p class="empty-tip">暂无上传文件</p >';
-                return;
-            }
-            fileListContainer.innerHTML = '';
-            uploadedFiles.forEach(file => {
-                const item = document.createElement('div');
-                item.className = 'file-item';
-                item.innerHTML = `
-                    <div>
-                        <span>${file.name}</span>
-                        <small>${file.size} | ${file.time}</small>
-                    </div>
-                    <div>
-                        <a href=" " target="_blank">打开</a >
-                        <button class="btn btn-danger" onclick="deleteFile(${file.id})">删除</button>
-                    </div>
-                `;
-                fileListContainer.appendChild(item);
-            });
-        }
-        // 删除文件
-        window.deleteFile = function(fileId) {
-            if (confirm('确定要删除该文件吗？删除后不可恢复！')) {
-                uploadedFiles = uploadedFiles.filter(file => file.id !== fileId);
-                localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
-                renderFileList();
-            }
-        }
+            // 获取输入的账号密码
+            const inputUser = document.getElementById('username').value.trim();
+            const inputPwd = document.getElementById('password').value.trim();
 
-        // ************************** 用户管理功能（新增+删除+权限） **************************
-        const addUserForm = document.getElementById('addUserForm');
-        const userListContainer = document.getElementById('userListContainer');
-        // 添加用户
-        addUserForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('newUsername').value;
-            const password = document.getElementById('newPassword').value;
-            const role = document.getElementById('newRole').value;
-            // 检查用户名是否重复
-            const isDuplicate = systemUsers.some(user => user.username === username);
-            if (isDuplicate) {
-                alert('该用户名已存在，请更换！');
-                return;
+            // 匹配用户列表
+            const matchUser = systemUsers.find(user => 
+                user.username === inputUser && user.password === inputPwd
+            );
+
+            // 验证结果
+            if (matchUser) {
+                // 登录成功：存储当前登录用户信息，跳转到后台
+                localStorage.setItem('currentLoginUser', JSON.stringify(matchUser));
+                alert(`登录成功！欢迎${matchUser.role === 'admin' ? '管理员' : '代理'}【${matchUser.username}】`);
+                window.location.href = 'admin.html'; // 后台页固定为admin.html，无需修改
+            } else {
+                // 登录失败：提示并清空输入框
+                alert('账号或密码错误，请重新输入！');
+                loginForm.reset();
             }
-            // 添加新用户
-            const newUser = { username, password, role };
-            systemUsers.push(newUser);
-            localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-            alert(`用户【${username}】（${role === 'admin' ? '管理员' : '代理'}）添加成功！`);
-            addUserForm.reset();
-            renderUserList();
         });
-        // 渲染用户列表
-        function renderUserList() {
-            if (systemUsers.length === 0) {
-                userListContainer.innerHTML = '<p class="empty-tip">暂无用户</p >';
-                return;
-            }
-            userListContainer.innerHTML = '';
-            systemUsers.forEach(user => {
-                const item = document.createElement('div');
-                item.className = 'user-item';
-                // 权限文字+颜色区分
-                const roleText = user.role === 'admin' ? '管理员' : '代理';
-                const roleClass = user.role === 'admin' ? 'user-role' : 'user-role role-proxy';
-                // 超级管理员不可删除
-                const deleteBtn = (user.username === SUPER_ADMIN.username) 
-                    ? '' 
-                    : `<button class="btn btn-danger" onclick="deleteUser('${user.username}')">删除</button>`;
-                item.innerHTML = `
-                    <div>
-                        <span>${user.username}</span>
-                        <small class="${roleClass}">权限：${roleText}</small>
-                    </div>
-                    ${deleteBtn}
-                `;
-                userListContainer.appendChild(item);
-            });
-        }
-        // 删除用户
-        window.deleteUser = function(username) {
-            if (confirm(`确定要删除用户【${username}】吗？删除后不可恢复！`)) {
-                systemUsers = systemUsers.filter(user => user.username !== username);
-                localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-                renderUserList();
-            }
-        }
     </script>
 </body>
 </html>
