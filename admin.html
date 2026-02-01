@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超级管理员后台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
+        body { background: #f5f7fa; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .admin-header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 8px; margin-bottom: 30px; width: 100%; max-width: 1000px; }
+        .admin-header button { background: #e74c3c; border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
+        .admin-header button:hover { background: #c0392b; }
+        .admin-container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; width: 100%; max-width: 1000px; }
+        .admin-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .admin-card h2 { color: #34495e; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 20px; }
+        .upload-box { border: 2px dashed #bdc3c7; border-radius: 8px; padding: 40px 20px; text-align: center; margin: 20px 0; cursor: pointer; transition: border-color 0.3s; }
+        .upload-box:hover { border-color: #3498db; }
+        .upload-box input { display: none; }
+        .btn { background: #3498db; border: none; color: white; padding: 10px 25px; border-radius: 4px; cursor: pointer; transition: background 0.3s; margin-top: 15px; font-size: 16px; }
+        .btn:hover { background: #2980b9; }
+        .btn-danger { background: #e74c3c; padding: 6px 12px; font-size: 14px; }
+        .btn-danger:hover { background: #c0392b; }
+        .tip { color: #7f8c8d; font-size: 14px; margin-top: 15px; }
+        .file-list, .user-list { margin-top: 20px; max-height: 300px; overflow-y: auto; padding-right: 10px; }
+        .file-item, .user-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #f8f9fa; border-radius: 4px; margin-bottom: 10px; }
+        .file-item div, .user-item div { display: flex; flex-direction: column; }
+        .file-item small, .user-item small { color: #7f8c8d; font-size: 12px; margin-top: 5px; }
+        .file-item a { color: #3498db; text-decoration: none; margin-right: 10px; }
+        .file-item a:hover { text-decoration: underline; }
+        .user-form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .user-form input, .user-form select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .user-role { color: #27ae60; font-size: 14px; font-weight: 500; }
+        .role-proxy { color: #f39c12; }
+        .empty-tip { color: #7f8c8d; text-align: center; padding: 30px 0; font-size: 14px; }
+        .file-owner { color: #e67e22; font-weight: 500; }
+        @media (max-width: 768px) { .admin-container { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1>超级管理员管理后台</h1>
+        <button id="logoutBtn">安全退出</button>
+    </div>
+
+    <div class="admin-container">
+        <div class="admin-card">
+            <h2>文件管理（所有用户）</h2>
+            <form id="uploadForm" enctype="multipart/form-data">
+                <label class="upload-box" id="uploadBox">
+                    点击选择文件<br><span>支持任意格式，单文件≤100MB</span>
+                    <input type="file" name="file" id="fileInput" multiple>
+                </label>
+                <button type="submit" class="btn">上传文件</button>
+                <p class="tip">✅ 管理员文件单独存储，可查看所有代理文件</p >
+            </form>
+            <div class="file-list">
+                <h3>所有文件列表</h3>
+                <div id="fileListContainer"></div>
+            </div>
+        </div>
+
+        <div class="admin-card">
+            <h2>用户管理（代理账号）</h2>
+            <form id="addUserForm" class="user-form">
+                <input type="text" id="newUsername" placeholder="代理用户名" required>
+                <input type="password" id="newPassword" placeholder="代理密码" required>
+                <select id="newRole" required style="display: none;">
+                    <option value="proxy" selected>代理</option>
+                </select>
+                <button type="submit" class="btn">添加代理</button>
+                <p class="tip">✅ 新增默认为代理，无用户管理权限</p >
+            </form>
+            <div class="user-list">
+                <h3>代理账号列表</h3>
+                <div id="userListContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const LOGIN_PAGE = 'index.html';
+        const SUPER_ADMIN = { username: 'ak', password: '2026', role: 'admin' };
+        let currentUser = JSON.parse(localStorage.getItem('currentLoginUser'));
+        let systemUsers = JSON.parse(localStorage.getItem('systemUsers')) || [SUPER_ADMIN];
+        let allFiles = JSON.parse(localStorage.getItem('allFiles')) || {};
+
+        // 权限验证：非ak管理员禁止访问
+        window.onload = function() {
+            if (!currentUser || currentUser.role !== 'admin' || currentUser.username !== 'ak') {
+                alert('无超级管理员权限，禁止访问！');
+                window.location.href = LOGIN_PAGE;
+                return;
+            }
+            renderAllFileList();
+            renderUserList();
+        }
+
+        // 退出登录
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            if (confirm('确定退出超级管理员后台吗？')) {
+                localStorage.removeItem('currentLoginUser');
+                window.location.href = LOGIN_PAGE;
+            }
+        });
+
+        // 文件上传
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const uploadForm = document.getElementById('uploadForm');
+        uploadBox.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                let fileName = this.files.length === 1 ? this.files[0].name : `共选择${this.files.length}个文件`;
+                uploadBox.innerHTML = `已选择：${fileName}<br><span>可重新选择</span>`;
+            }
+        });
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const files = fileInput.files;
+            if (files.length === 0) { alert('请选择文件！'); return; }
+            if (!allFiles[currentUser.username]) allFiles[currentUser.username] = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                allFiles[currentUser.username].unshift({
+                    id: Date.now() + i,
+                    name: file.name,
+                    size: formatFileSize(file.size),
+                    url: URL.createObjectURL(file),
+                    time: new Date().toLocaleString()
+                });
+            }
+            localStorage.setItem('allFiles', JSON.stringify(allFiles));
+            alert(`成功上传${files.length}个文件！`);
+            uploadForm.reset();
+            uploadBox.innerHTML = `点击选择文件<br><span>支持任意格式，单文件≤100MB</span>`;
+            renderAllFileList();
+        });
+
+        // 渲染所有文件
+        function renderAllFileList() {
+            const container = document.getElementById('fileListContainer');
+            let fileHtml = '';
+            let hasFile = false;
+            for (let [user, files] of Object.entries(allFiles)) {
+                if (files.length === 0) continue;
+                hasFile = true;
+                fileHtml += `<div style="margin-bottom:20px;"><p class="file-owner">📁 ${user === 'ak' ? '超级管理员' : '代理【'+user+'】'} 的文件</p >`;
+                files.forEach(file => {
+                    fileHtml += `
+                        <div class="file-item">
+                            <div>
+                                <span>${file.name}</span>
+                                <small>${file.size} | ${file.time}</small>
+                            </div>
+                            <div>
+                                <a href=" " target="_blank">打开</a >
+                                <button class="btn btn-danger" onclick="deleteFile('${user}', ${file.id})">删除</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                fileHtml += '</div>';
+            }
+            container.innerHTML = hasFile ? fileHtml : '<p class="empty-tip">暂无任何用户上传文件</p >';
+        }
+
+        // 删除文件
+        window.deleteFile = function(user, fileId) {
+            if (confirm('确定删除该文件吗？删除后不可恢复！')) {
+                allFiles[user] = allFiles[user].filter(file => file.id !== fileId);
+                localStorage.setItem('allFiles', JSON.stringify(allFiles));
+                renderAllFileList();
+            }
+        }
+
+        // 添加代理
+        const addUserForm = document.getElementById('addUserForm');
+        addUserForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value.trim();
+            if (systemUsers.some(user => user.username === username)) {
+                alert('该用户名已存在，请更换！');
+                return;
+            }
+            systemUsers.push({ username, password, role: 'proxy' });
+            localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
+            alert(`代理账号【${username}】添加成功！`);
+            addUserForm.reset();
+            renderUserList();
+        });
+
+        // 渲染代理列表
+        function renderUserList() {
+            const container = document.getElementById('userListContainer');
+            const proxyUsers = systemUsers.filter(user => user.role === 'proxy');
+            if (proxyUsers.length === 0) {
+                container.innerHTML = '<p class="empty-tip">暂无添加代理账号</p >';
+                return;
+            }
+            let userHtml = '';
+            proxyUsers.forEach(user => {
+                userHtml += `
+                    <div class="user-item">
+                        <div>
+                            <span>${user.username}</span>
+                            <small class="user-role role-proxy">权限：代理</small>
+                        </div>
+                        <button class="btn btn-danger" onclick="deleteUser('${user.username}')">删除</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = userHtml;
+        }
+
+        // 删除代理（同步删除文件）
+        window.deleteUser = function(username) {
+            if (confirm(`确定删除代理【${username}】吗？将同时删除该代理的所有文件！`)) {
+                systemUsers = systemUsers.filter(user => user.username !== username);
+                delete allFiles[username];
+                localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
+                localStorage.setItem('allFiles', JSON.stringify(allFiles));
+                renderUserList();
+                renderAllFileList();
+            }
+        }
+
+        // 格式化文件大小
+        function formatFileSize(size) {
+            if (size < 1024) return size + ' B';
+            if (size < 1024 * 1024) return (size / 1024).toFixed(2) + ' KB';
+            return (size / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+    </script>
+</body>
+</html>
