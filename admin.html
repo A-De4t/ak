@@ -1,216 +1,180 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>超级管理员后台</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft YaHei", sans-serif; }
-        body { background: #f5f7fa; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; background: #2c3e50; color: white; padding: 15px 30px; border-radius: 8px; margin-bottom: 30px; width: 100%; max-width: 1200px; }
-        .admin-header button { background: #e74c3c; border: none; color: white; padding: 8px 16px; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
-        .admin-header button:hover { background: #c0392b; }
-        .admin-container { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; width: 100%; max-width: 1200px; }
-        .admin-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); height: 100%; }
-        .admin-card h2 { color: #34495e; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee; font-size: 20px; }
-        .btn { background: #3498db; border: none; color: white; padding: 10px 25px; border-radius: 4px; cursor: pointer; transition: background 0.3s; margin-top: 15px; font-size: 16px; }
-        .btn:hover { background: #2980b9; }
-        .btn-danger { background: #e74c3c; padding: 6px 12px; font-size: 14px; border: none; color: white; border-radius: 4px; cursor: pointer; }
-        .btn-danger:hover { background: #c0392b; }
-        .tip { color: #7f8c8d; font-size: 14px; margin-top: 15px; }
-        .user-list, .agent-file-list { margin-top: 20px; max-height: 400px; overflow-y: auto; padding-right: 10px; }
-        .user-item, .agent-file-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: #f8f9fa; border-radius: 4px; margin-bottom: 10px; }
-        .user-item div, .agent-file-item div { display: flex; flex-direction: column; }
-        .user-item small, .agent-file-item small { color: #7f8c8d; font-size: 12px; margin-top: 5px; }
-        .agent-file-item a { color: #3498db; text-decoration: none; margin-right: 10px; }
-        .agent-file-item a:hover { text-decoration: underline; }
-        .user-role { color: #27ae60; font-size: 14px; font-weight: 500; }
-        .role-proxy { color: #f39c12; }
-        .empty-tip { color: #7f8c8d; text-align: center; padding: 30px 0; font-size: 14px; }
-        .agent-filter { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; font-size: 14px; outline: none; }
-        .agent-filter:focus { border-color: #3498db; }
-        .agent-folder-title { color: #2c3e50; font-weight: 600; margin: 15px 0 10px 0; font-size: 15px; }
-        .user-form { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
-        .user-form input { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-        @media (max-width: 768px) { .admin-container { grid-template-columns: 1fr; } }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>超级管理员后台</title>
+  <!-- 引入公共样式 -->
+  <link rel="stylesheet" href="common.css">
+  <style>
+    /* 仅后台页专属样式（比如两栏布局） */
+    .admin-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+    .user-list, .agent-file-list {
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 10px;
+    }
+    .item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+    .agent-filter { margin-bottom: 20px; }
+    @media (max-width: 768px) { .admin-container { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
-    <div class="admin-header">
-        <h1>超级管理员管理后台 - ak</h1>
-        <button id="logoutBtn">安全退出</button>
+  <!-- 仅后台页结构 -->
+  <div class="page-header">
+    <h1>超级管理员后台 - <span id="adminName"></span></h1>
+    <button class="btn-danger" onclick="logout()">安全退出</button>
+  </div>
+
+  <div class="admin-container">
+    <!-- 代理账号管理 -->
+    <div class="card">
+      <h3>代理账号管理</h3>
+      <input type="text" id="newUser" placeholder="代理用户名" required>
+      <input type="password" id="newPwd" placeholder="代理密码" required>
+      <button class="btn" onclick="addProxy()">添加代理</button>
+      <p class="tip">✅ 新增默认为代理权限</p>
+      <div class="user-list" id="userList"></div>
     </div>
 
-    <div class="admin-container">
-        <!-- 1. 代理账号管理 -->
-        <div class="admin-card">
-            <h2>代理账号管理</h2>
-            <form id="addUserForm" class="user-form">
-                <input type="text" id="newUsername" placeholder="代理用户名" required>
-                <input type="password" id="newPassword" placeholder="代理密码" required>
-                <select id="newRole" required style="display: none;">
-                    <option value="proxy" selected>代理</option>
-                </select>
-                <button type="submit" class="btn">添加代理</button>
-                <p class="tip">✅ 新增默认为代理，无用户管理权限</p>
-            </form>
-            <div class="user-list">
-                <h3>代理账号列表</h3>
-                <div id="userListContainer"></div>
-            </div>
-        </div>
-
-        <!-- 2. 代理文件管理 -->
-        <div class="admin-card">
-            <h2>代理文件管理</h2>
-            <input type="text" id="agentFileFilter" class="agent-filter" placeholder="输入代理用户名筛选文件...">
-            <div class="agent-file-list">
-                <div id="agentFileListContainer"></div>
-            </div>
-        </div>
+    <!-- 代理文件管理 -->
+    <div class="card">
+      <h3>代理文件管理</h3>
+      <input type="text" class="agent-filter" id="fileFilter" placeholder="输入代理名筛选" oninput="filterFiles()">
+      <div class="agent-file-list" id="fileList"></div>
     </div>
+  </div>
 
-    <script>
-        const LOGIN_PAGE = 'index.html';
-        const SUPER_ADMIN = { username: 'ak', password: '2026', role: 'admin' };
-        let currentUser = JSON.parse(localStorage.getItem('currentLoginUser'));
-        let systemUsers = JSON.parse(localStorage.getItem('systemUsers')) || [SUPER_ADMIN];
-        let allFiles = JSON.parse(localStorage.getItem('allFiles')) || {};
+  <!-- 引入公共JS -->
+  <script src="common.js"></script>
+  <script>
+    // 权限验证：仅管理员可访问
+    const currentUser = checkAuth('admin');
+    if (!currentUser) return;
+    document.getElementById('adminName').innerText = currentUser.username;
 
-        // 权限验证：非ak管理员禁止访问
-        window.onload = function() {
-            if (!currentUser || currentUser.role !== 'admin' || currentUser.username !== 'ak') {
-                alert('无超级管理员权限，禁止访问！');
-                window.location.href = LOGIN_PAGE;
-                return;
-            }
-            renderUserList();
-            renderAllAgentFiles();
-            document.getElementById('agentFileFilter').addEventListener('input', filterAgentFiles);
-        }
+    // 初始化数据（用户+文件）
+    let systemUsers = getLocalData('systemUsers');
+    let allFiles = getLocalData('allFiles') || {};
+    // 仅显示代理用户
+    const proxyUsers = systemUsers.filter(u => u.role === 'proxy');
 
-        // 退出登录
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            if (confirm('确定退出超级管理员后台吗？')) {
-                localStorage.removeItem('currentLoginUser');
-                window.location.href = LOGIN_PAGE;
-            }
-        });
+    // 页面加载时渲染数据
+    window.onload = function() {
+      renderUserList();
+      renderFileList();
+    }
 
-        // ---------------------- 代理账号管理 ----------------------
-        const addUserForm = document.getElementById('addUserForm');
-        addUserForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('newUsername').value.trim();
-            const password = document.getElementById('newPassword').value.trim();
-            if (systemUsers.some(user => user.username === username)) {
-                alert('该用户名已存在，请更换！');
-                return;
-            }
-            if (!allFiles[username]) allFiles[username] = [];
-            systemUsers.push({ username, password, role: 'proxy' });
-            localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-            localStorage.setItem('allFiles', JSON.stringify(allFiles));
-            alert(`代理账号【${username}】添加成功！`);
-            addUserForm.reset();
-            renderUserList();
-            renderAllAgentFiles();
-        });
+    // 1. 代理账号管理：添加代理
+    function addProxy() {
+      const username = document.getElementById('newUser').value.trim();
+      const password = document.getElementById('newPwd').value.trim();
+      if (systemUsers.some(u => u.username === username)) {
+        alert('用户名已存在！');
+        return;
+      }
+      // 添加代理+初始化文件目录
+      systemUsers.push({ username, password, role: 'proxy' });
+      allFiles[username] = allFiles[username] || [];
+      // 保存数据并刷新
+      setLocalData('systemUsers', systemUsers);
+      setLocalData('allFiles', allFiles);
+      alert(`代理【${username}】添加成功！`);
+      document.getElementById('newUser').value = '';
+      document.getElementById('newPwd').value = '';
+      renderUserList();
+    }
 
-        function renderUserList() {
-            const container = document.getElementById('userListContainer');
-            const proxyUsers = systemUsers.filter(user => user.role === 'proxy');
-            if (proxyUsers.length === 0) {
-                container.innerHTML = '<p class="empty-tip">暂无添加代理账号</p>';
-                return;
-            }
-            let userHtml = '';
-            proxyUsers.forEach(user => {
-                userHtml += `
-                    <div class="user-item">
-                        <div>
-                            <span>${user.username}</span>
-                            <small class="user-role role-proxy">权限：代理</small>
-                        </div>
-                        <button class="btn btn-danger" onclick="deleteUser('${user.username}')">删除</button>
-                    </div>
-                `;
-            });
-            container.innerHTML = userHtml;
-        }
+    // 2. 代理账号管理：删除代理
+    function delProxy(username) {
+      if (!confirm(`确定删除代理【${username}】及所有文件？`)) return;
+      systemUsers = systemUsers.filter(u => u.username !== username);
+      delete allFiles[username];
+      setLocalData('systemUsers', systemUsers);
+      setLocalData('allFiles', allFiles);
+      renderUserList();
+      renderFileList();
+    }
 
-        window.deleteUser = function(username) {
-            if (confirm(`确定删除代理【${username}】吗？将同时删除该代理的所有文件！`)) {
-                systemUsers = systemUsers.filter(user => user.username !== username);
-                delete allFiles[username];
-                localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-                localStorage.setItem('allFiles', JSON.stringify(allFiles));
-                renderUserList();
-                renderAllAgentFiles();
-            }
-        };
+    // 3. 渲染代理账号列表
+    function renderUserList() {
+      const userList = document.getElementById('userList');
+      const proxies = systemUsers.filter(u => u.role === 'proxy');
+      if (proxies.length === 0) {
+        userList.innerHTML = '<p class="empty-tip">暂无代理账号</p>';
+        return;
+      }
+      userList.innerHTML = proxies.map(u => `
+        <div class="item">
+          <span>${u.username}</span>
+          <button class="btn-danger" onclick="delProxy('${u.username}')">删除</button>
+        </div>
+      `).join('');
+    }
 
-        // ---------------------- 代理文件管理 ----------------------
-        function renderAllAgentFiles() {
-            const container = document.getElementById('agentFileListContainer');
-            const proxyUsers = systemUsers.filter(user => user.role === 'proxy');
-            const agentWithFiles = proxyUsers.filter(agent => allFiles[agent.username] && allFiles[agent.username].length > 0);
-            
-            if (proxyUsers.length === 0) {
-                container.innerHTML = '<p class="empty-tip">暂无添加代理账号</p>';
-                return;
-            }
-            if (agentWithFiles.length === 0) {
-                container.innerHTML = '<p class="empty-tip">所有代理暂无上传文件</p>';
-                return;
-            }
-            let agentFileHtml = '';
-            agentWithFiles.forEach(agent => {
-                const agentFiles = allFiles[agent.username];
-                agentFileHtml += `<div class="agent-folder" data-agent="${agent.username}">`;
-                agentFileHtml += `<p class="agent-folder-title">📁 代理【${agent.username}】- 共${agentFiles.length}个文件</p>`;
-                agentFiles.forEach(file => {
-                    agentFileHtml += `
-                        <div class="agent-file-item">
-                            <div>
-                                <span>${file.name}</span>
-                                <small>${formatFileSize(file.size)} | 上传时间：${file.time}</small>
-                            </div>
-                            <div>
-                                <a href="${file.url}" target="_blank">打开/下载</a>
-                                <button class="btn btn-danger" onclick="deleteAgentFile('${agent.username}', ${file.id})">删除</button>
-                            </div>
-                        </div>
-                    `;
-                });
-                agentFileHtml += '</div>';
-            });
-            container.innerHTML = agentFileHtml;
-        }
+    // 4. 渲染代理文件列表
+    function renderFileList() {
+      const fileList = document.getElementById('fileList');
+      const proxies = systemUsers.filter(u => u.role === 'proxy');
+      const hasFileAgents = proxies.filter(p => allFiles[p.username] && allFiles[p.username].length > 0);
+      
+      if (proxies.length === 0) {
+        fileList.innerHTML = '<p class="empty-tip">暂无代理账号</p>';
+        return;
+      }
+      if (hasFileAgents.length === 0) {
+        fileList.innerHTML = '<p class="empty-tip">所有代理暂无文件</p>';
+        return;
+      }
+      fileList.innerHTML = hasFileAgents.map(p => {
+        const files = allFiles[p.username];
+        return `
+          <div class="agent-folder" data-agent="${p.username}">
+            <h4>📁 代理【${p.username}】(${files.length}个文件)</h4>
+            ${files.map(f => `
+              <div class="item">
+                <div>
+                  <span>${f.name}</span>
+                  <small>${f.size} | ${f.time}</small>
+                </div>
+                <div>
+                  <a href="${f.url}" target="_blank" style="color: #3498db; text-decoration: none; margin-right: 10px;">打开</a>
+                  <button class="btn-danger" onclick="delFile('${p.username}', ${f.id})">删除</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }).join('');
+    }
 
-        function filterAgentFiles() {
-            const filterText = document.getElementById('agentFileFilter').value.trim().toLowerCase();
-            const agentFolders = document.querySelectorAll('.agent-folder');
-            agentFolders.forEach(folder => {
-                const agentName = folder.dataset.agent.toLowerCase();
-                folder.style.display = agentName.includes(filterText) ? 'block' : 'none';
-            });
-        }
+    // 5. 删除代理文件
+    function delFile(agentName, fileId) {
+      if (!confirm('确定删除该文件？')) return;
+      allFiles[agentName] = allFiles[agentName].filter(f => f.id !== fileId);
+      setLocalData('allFiles', allFiles);
+      renderFileList();
+    }
 
-        window.deleteAgentFile = function(agentName, fileId) {
-            if (confirm(`确定删除代理【${agentName}】的该文件吗？删除后不可恢复！`)) {
-                allFiles[agentName] = allFiles[agentName].filter(file => file.id !== fileId);
-                localStorage.setItem('allFiles', JSON.stringify(allFiles));
-                renderAllAgentFiles();
-            }
-        };
-
-        // ---------------------- 通用方法 ----------------------
-        function formatFileSize(size) {
-            if (size < 1024) return size + ' B';
-            if (size < 1024 * 1024) return (size / 1024).toFixed(2) + ' KB';
-            return (size / (1024 * 1024)).toFixed(2) + ' MB';
-        }
-    </script>
+    // 6. 筛选代理文件
+    function filterFiles() {
+      const filter = document.getElementById('fileFilter').value.trim().toLowerCase();
+      document.querySelectorAll('.agent-folder').forEach(f => {
+        f.style.display = f.dataset.agent.toLowerCase().includes(filter) ? 'block' : 'none';
+      });
+    }
+  </script>
 </body>
 </html>
