@@ -34,21 +34,29 @@
 
     <script src="script.js"></script>
     <script>
-        // 页面加载时验证是否已登录（防止直接访问）
-        if (!localStorage.getItem('loggedInUser')) {
-            window.location.href = 'index.html'; // 未登录则跳转到登录页
-        } else {
-            const user = JSON.parse(localStorage.getItem('loggedInUser'));
-            // 验证是否为超级管理员（防止代理冒充）
+        // 修复：适配 GitHub Pages 路径，强制使用相对路径验证
+        (function() {
+            // 1. 检查登录状态
+            const loggedInUserStr = localStorage.getItem('loggedInUser');
+            if (!loggedInUserStr) {
+                // 跳转到登录页（适配 GitHub Pages 路径）
+                window.location.href = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+                return;
+            }
+
+            // 2. 解析用户信息并验证角色
+            const user = JSON.parse(loggedInUserStr);
             if (user.role !== 'superAdmin') {
                 localStorage.removeItem('loggedInUser');
-                window.location.href = 'index.html';
+                alert('无超级管理员权限！');
+                window.location.href = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
+                return;
             }
-            // 显示当前登录用户名
+
+            // 3. 显示用户名并初始化页面
             document.getElementById('adminName').textContent = `欢迎您，(${user.username})`;
-            // 初始化管理员后台页面
             initAdminDashboard();
-        }
+        })();
     </script>
 </body>
 </html>
