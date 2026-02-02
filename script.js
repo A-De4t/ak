@@ -1,4 +1,13 @@
-// 模拟数据
+// 模拟系统用户数据库（实际项目中替换为后端接口）
+const systemUsers = [
+    // 超级管理员账号
+    { username: 'admin', password: '123456', role: 'superAdmin' },
+    // 代理账号
+    { username: 'proxy001', password: 'proxy123', role: 'proxy' },
+    { username: 'proxy002', password: 'proxy456', role: 'proxy' }
+];
+
+// 模拟数据（保持原有）
 const mockUsers = [
     { id: 1, username: 'admin', role: '超级管理员', createTime: '2023-01-01', status: '活跃' },
     { id: 2, username: 'proxy001', role: '代理', createTime: '2023-02-15', status: '活跃' },
@@ -18,35 +27,100 @@ const mockStats = {
     todayLogs: 1
 };
 
-// 页面加载完成后初始化
+// 代理专属数据（新增）
+const proxyMockData = {
+    myStats: {
+        totalOrders: 120,
+        todayOrders: 8,
+        totalIncome: 35600,
+        todayIncome: 2400
+    },
+    myLogs: [
+        { id: 1, action: '查看数据报表', time: '2023-04-03 10:20:00' },
+        { id: 2, action: '导出数据', time: '2023-04-02 15:30:00' },
+        { id: 3, action: '修改个人密码', time: '2023-04-01 09:10:00' }
+    ]
+};
+
+// 登录表单提交事件（登录页专用）
 document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) { // 只有登录页才绑定该事件
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const role = document.getElementById('userRole').value;
+
+            // 验证输入
+            if (!username || !password || !role) {
+                alert('请填写完整信息！');
+                return;
+            }
+
+            // 验证账号密码（实际项目中替换为后端接口请求）
+            const user = systemUsers.find(u => 
+                u.username === username && 
+                u.password === password && 
+                u.role === role
+            );
+
+            if (user) {
+                // 登录成功：存储用户信息到本地存储（实际项目中用 token）
+                localStorage.setItem('loggedInUser', JSON.stringify(user));
+                // 根据角色跳转到对应后台
+                if (role === 'superAdmin') {
+                    window.location.href = 'admin.html';
+                } else if (role === 'proxy') {
+                    window.location.href = 'proxy.html';
+                }
+            } else {
+                alert('用户名、密码或角色不匹配！');
+            }
+        });
+    }
+
+    // 超级管理员退出登录
+    const adminLogoutBtn = document.getElementById('logoutBtn');
+    if (adminLogoutBtn) {
+        adminLogoutBtn.addEventListener('click', function() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('loggedInUser');
+                window.location.href = 'index.html';
+            }
+        });
+    }
+
+    // 代理退出登录
+    const proxyLogoutBtn = document.getElementById('proxyLogoutBtn');
+    if (proxyLogoutBtn) {
+        proxyLogoutBtn.addEventListener('click', function() {
+            if (confirm('确定要退出登录吗？')) {
+                localStorage.removeItem('loggedInUser');
+                window.location.href = 'index.html';
+            }
+        });
+    }
+});
+
+// 初始化超级管理员后台（admin.html 专用）
+function initAdminDashboard() {
     // 默认加载第一个页面
-    loadPage('proxyAccount');
+    loadAdminPage('proxyAccount');
 
     // 为所有菜单项绑定点击事件
     document.querySelectorAll('.menu-item').forEach(item => {
         item.addEventListener('click', function() {
-            // 移除所有菜单项的激活状态
             document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-            // 给当前点击的菜单项添加激活状态
             this.classList.add('active');
-            // 获取并加载目标页面
             const targetPage = this.getAttribute('data-target');
-            loadPage(targetPage);
+            loadAdminPage(targetPage);
         });
     });
+}
 
-    // 退出登录按钮事件
-    document.getElementById('logoutBtn').addEventListener('click', function() {
-        if (confirm('确定要退出登录吗？')) {
-            alert('已退出登录');
-            // 这里可以跳转到登录页
-        }
-    });
-});
-
-// 根据菜单项加载对应的页面内容
-function loadPage(pageName) {
+// 加载超级管理员页面内容
+function loadAdminPage(pageName) {
     const contentArea = document.getElementById('contentArea');
     let pageHTML = '';
 
@@ -83,11 +157,11 @@ function loadPage(pageName) {
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>用户名</th>
-                                <th>权限</th>
-                                <th>创建时间</th>
-                                <th>状态</th>
+                                <<th>ID</</th>
+                                <<th>用户名</</th>
+                                <<th>权限</</th>
+                                <<th>创建时间</</th>
+                                <<th>状态</</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -142,11 +216,11 @@ function loadPage(pageName) {
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>操作人</th>
-                                <th>操作</th>
-                                <th>目标</th>
-                                <th>时间</th>
+                                <<th>ID</</th>
+                                <<th>操作人</</th>
+                                <<th>操作</</th>
+                                <<th>目标</</th>
+                                <<th>时间</</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -192,18 +266,15 @@ function loadPage(pageName) {
             pageHTML = '<p>页面不存在</p>';
     }
 
-    // 将生成的 HTML 插入到内容区域
     contentArea.innerHTML = pageHTML;
-
-    // 为新加载的页面绑定事件
-    bindPageEvents(pageName);
+    // 绑定页面事件
+    bindAdminPageEvents(pageName);
 }
 
-// 为特定页面绑定事件
-function bindPageEvents(pageName) {
+// 绑定超级管理员页面事件
+function bindAdminPageEvents(pageName) {
     switch(pageName) {
         case 'proxyAccount':
-            // 绑定添加用户表单的提交事件
             document.getElementById('addUserForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const username = document.getElementById('username').value;
@@ -214,9 +285,160 @@ function bindPageEvents(pageName) {
             });
             break;
         case 'operationLog':
-            // 绑定导出日志按钮事件
             document.getElementById('exportLogs').addEventListener('click', function() {
                 alert('日志导出成功！');
+            });
+            break;
+        default:
+            break;
+    }
+}
+
+// 初始化代理后台（proxy.html 专用）
+function initProxyDashboard() {
+    // 默认加载第一个页面
+    loadProxyPage('proxyData');
+
+    // 为所有菜单项绑定点击事件
+    document.querySelectorAll('.menu-item').forEach(item => {
+        item.addEventListener('click', function() {
+            document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            const targetPage = this.getAttribute('data-target');
+            loadProxyPage(targetPage);
+        });
+    });
+}
+
+// 加载代理页面内容
+function loadProxyPage(pageName) {
+    const contentArea = document.getElementById('proxyContentArea');
+    let pageHTML = '';
+
+    switch(pageName) {
+        case 'proxyData':
+            pageHTML = `
+                <div class="page-title">我的代理数据</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${proxyMockData.myStats.totalOrders}</div>
+                        <div class="stat-label">总订单数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${proxyMockData.myStats.todayOrders}</div>
+                        <div class="stat-label">今日订单数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${proxyMockData.myStats.totalIncome}</div>
+                        <div class="stat-label">总收益（元）</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${proxyMockData.myStats.todayIncome}</div>
+                        <div class="stat-label">今日收益（元）</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h4>最近订单列表</h4>
+                    <table class="table" style="margin-top: 1rem;">
+                        <thead>
+                            <tr>
+                                <<th>订单ID</</th>
+                                <<th>客户名称</</th>
+                                <<th>订单金额</</th>
+                                <<th>下单时间</</th>
+                                <<th>状态</</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>OD20230403001</td>
+                                <td>客户A</td>
+                                <td>800元</td>
+                                <td>2023-04-03 10:20:00</td>
+                                <td><span style="color: #67c23a;">已完成</span></td>
+                            </tr>
+                            <tr>
+                                <td>OD20230403002</td>
+                                <td>客户B</td>
+                                <td>1200元</td>
+                                <td>2023-04-03 14:30:00</td>
+                                <td><span style="color: #409eff;">处理中</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-primary" style="margin-top: 1rem;">导出完整数据</button>
+                </div>
+            `;
+            break;
+        case 'proxyProfile':
+            pageHTML = `
+                <div class="page-title">个人信息管理</div>
+                <div class="card">
+                    <form id="proxyProfileForm">
+                        <div class="form-group">
+                            <label>用户名：</label>
+                            <input type="text" class="form-control" value="${JSON.parse(localStorage.getItem('loggedInUser')).username}" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>当前密码：</label>
+                            <input type="password" class="form-control" required placeholder="请输入当前密码">
+                        </div>
+                        <div class="form-group">
+                            <label>新密码：</label>
+                            <input type="password" class="form-control" required placeholder="请输入新密码">
+                        </div>
+                        <div class="form-group">
+                            <label>确认新密码：</label>
+                            <input type="password" class="form-control" required placeholder="请再次输入新密码">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            `;
+            break;
+        case 'proxyLogs':
+            pageHTML = `
+                <div class="page-title">我的操作日志</div>
+                <div class="card">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <<th>ID</</th>
+                                <<th>操作</</th>
+                                <<th>操作时间</</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${proxyMockData.myLogs.map(log => `
+                                <tr>
+                                    <td>${log.id}</td>
+                                    <td>${log.action}</td>
+                                    <td>${log.time}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            break;
+        default:
+            pageHTML = '<p>页面不存在</p>';
+    }
+
+    contentArea.innerHTML = pageHTML;
+    // 绑定代理页面事件
+    bindProxyPageEvents(pageName);
+}
+
+// 绑定代理页面事件
+function bindProxyPageEvents(pageName) {
+    switch(pageName) {
+        case 'proxyProfile':
+            document.getElementById('proxyProfileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('密码修改成功！请重新登录');
+                localStorage.removeItem('loggedInUser');
+                window.location.href = 'index.html';
             });
             break;
         default:
