@@ -3,29 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系统管理后台</title>
+    <title>超级管理后台 - 仅管理员可访问</title>
     <link rel="stylesheet" href="common.css">
 </head>
 <body>
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1>系统管理后台</h1>
-            <div>
-                欢迎，<span id="current-user"></span>
-                <button class="btn btn-danger" onclick="logout()">退出</button>
-            </div>
+    <!-- 顶部导航：用户名+退出按钮 -->
+    <header class="admin-header">
+        <h1>系统超级管理后台</h1>
+        <div class="user-info">
+            欢迎您，<span id="current-username" class="username"></span>（超级管理员）
+            <button class="logout-btn" onclick="logout()">退出登录</button>
         </div>
+    </header>
 
-        <div class="card">
-            <h3>管理功能区</h3>
-            <p>这里可以添加用户管理、数据统计等功能...</p>
+    <!-- 核心内容区 -->
+    <main class="content-container">
+        <div class="function-card">
+            <h3>🔧 管理员专属功能</h3>
+            <ul>
+                <li>代理账号管理（新增/修改/删除）</li>
+                <li>系统全局设置</li>
+                <li>所有代理数据查看/统计</li>
+                <li>操作日志查看</li>
+            </ul>
         </div>
-    </div>
+        <div class="function-card">
+            <h3>📋 代理账号列表（点击刷新）</h3>
+            <button class="refresh-btn" onclick="getProxyList()">刷新代理列表</button>
+            <div id="proxy-list" class="proxy-list"></div>
+        </div>
+    </main>
 
     <script src="common.js"></script>
     <script>
-        // 页面加载时自动校验登录
-        window.onload = protectPage;
+        // 页面加载即校验：1.是否登录 2.是否为管理员
+        window.onload = async () => {
+            await checkAdminAuth(); // 管理员专属校验
+            initAutoLogout();       // 初始化无操作自动退出
+        };
+
+        // 可选功能：获取所有代理账号（仅管理员可看）
+        async function getProxyList() {
+            try {
+                const res = await fetch(`${API_BASE}/get-proxies`, {
+                    method: "GET",
+                    credentials: "include"
+                });
+                const data = await res.json();
+                if (data.success) {
+                    const proxyList = document.getElementById("proxy-list");
+                    proxyList.innerHTML = "";
+                    for (let [account, info] of Object.entries(data.proxies)) {
+                        proxyList.innerHTML += `<div class="proxy-item">账号：${account} | 密码：${info.password}</div>`;
+                    }
+                    if (Object.keys(data.proxies).length === 0) {
+                        proxyList.innerHTML = "<p>暂无代理账号</p>";
+                    }
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) {
+                console.error("获取代理列表失败：", err);
+                alert("获取失败，请检查后端服务！");
+            }
+        }
     </script>
 </body>
 </html>
