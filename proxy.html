@@ -38,8 +38,9 @@
         } else {
             const user = JSON.parse(localStorage.getItem('loggedInUser'));
             // 验证是否为代理（防止超级管理员冒充）
-            if (user.role !== 'proxy') {
+            if (user.role !== 'proxy' || user.status !== 'active') {
                 localStorage.removeItem('loggedInUser');
+                alert(user.status !== 'active' ? '该账号已被禁用，请联系管理员！' : '无权限访问代理后台');
                 window.location.href = 'index.html';
             }
             // 显示当前登录用户名
@@ -49,4 +50,3 @@
         }
     </script>
 </body>
-</html>
