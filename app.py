@@ -51,17 +51,18 @@ def login():
             del login_attempts[username]
     
     # 校验密码
-    if USER_LIST[username]['password'] == password:
-        if username in login_attempts:
-            del login_attempts[username]
-        session['username'] = username
-        session['role'] = USER_LIST[username]['role']
-        return jsonify({
-            "success": True,
-           "message": f"{USER_LIST[username]['role']=='admin'?'超级管理员':'代理'}登录成功！",
-            "username": username,
-            "role": USER_LIST[username]['role']
-        })
+if USER_LIST[username]['password'] == password:
+    if username in login_attempts:
+        del login_attempts[username]
+    session['username'] = username
+    session['role'] = USER_LIST[username]['role']
+    return jsonify({
+        "success": True,
+        # 注意：这里必须用英文单引号
+        "message": f"{USER_LIST[username]['role']=='admin'?'超级管理员':'代理'}登录成功！",
+        "username": username,
+        "role": USER_LIST[username]['role']
+    })
     else:
         if username not in login_attempts:
             login_attempts[username] = {"times": 1, "last_time": time.time()}
