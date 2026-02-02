@@ -272,7 +272,7 @@
             }
         }
     </style>
-    <!-- 引入图标（可选，增强视觉效果） -->
+    <!-- 引入图标 -->
     <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -287,23 +287,23 @@
         <!-- 左侧导航 -->
         <div class="sidebar">
             <div class="menu-item active" data-target="proxyAccount">
-                <i class="fas fa-user-plus"></i>
+                <<i class="fas fa-user-plus"></</i>
                 <span>代理账号管理</span>
             </div>
             <div class="menu-item" data-target="systemConfig">
-                <i class="fas fa-cog"></i>
+                <<i class="fas fa-cog"></</i>
                 <span>系统配置管理</span>
             </div>
             <div class="menu-item" data-target="dataView">
-                <i class="fas fa-chart-bar"></i>
+                <<i class="fas fa-chart-bar"></</i>
                 <span>数据统计分析</span>
             </div>
             <div class="menu-item" data-target="operationLog">
-                <i class="fas fa-history"></i>
+                <<i class="fas fa-history"></</i>
                 <span>操作日志查看</span>
             </div>
             <div class="menu-item" data-target="permission">
-                <i class="fas fa-lock"></i>
+                <<i class="fas fa-lock"></</i>
                 <span>系统权限分配</span>
             </div>
         </div>
@@ -315,23 +315,39 @@
     </div>
 
     <script>
-        // ========== 全局变量和初始化 ==========
+        // ========== 全局变量 ==========
         let systemUsers = [];
-        const loginUser = JSON.parse(localStorage.getItem('loginUser') || '{}');
+        let loginUser = {};
 
-        // 验证登录状态
-        if (!loginUser.username || loginUser.role !== 'superAdmin') {
-            window.location.href = window.location.href.replace('admin.html', 'index.html');
-        }
+        // ========== 优先初始化数据和验证登录状态 ==========
+        (function() {
+            // 1. 先读取用户数据（确保数据存在）
+            initUsers();
+            
+            // 2. 再验证登录状态
+            loginUser = JSON.parse(localStorage.getItem('loginUser') || '{}');
+            if (!loginUser.username || loginUser.role !== 'superAdmin' || loginUser.status !== 'active') {
+                // 强制跳回登录页（确保路径正确）
+                const baseUrl = window.location.href.replace('admin.html', '');
+                window.location.href = baseUrl + 'index.html';
+                return;
+            }
 
-        // 初始化用户数据
+            // 3. 数据和状态都正常，初始化页面
+            document.addEventListener('DOMContentLoaded', function() {
+                loadPage('proxyAccount');
+                bindMenuEvents();
+            });
+        })();
+
+        // ========== 数据初始化函数 ==========
         function initUsers() {
-            // 从本地存储读取，没有则初始化
+            // 从本地存储读取数据
             const storedUsers = localStorage.getItem('systemUsers');
             if (storedUsers) {
                 systemUsers = JSON.parse(storedUsers);
             } else {
-                // 默认初始化超级管理员（ak）和测试代理
+                // 初始化默认数据（确保ak管理员存在）
                 systemUsers = [
                     { id: 1, username: 'ak', password: '2026', role: 'superAdmin', status: 'active', createTime: '2026-02-02' },
                     { id: 2, username: 'testproxy', password: '123456', role: 'proxy', status: 'active', createTime: '2026-02-02' }
@@ -340,26 +356,18 @@
             }
         }
 
-        // ========== 页面加载和导航 ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            initUsers();
-            // 默认加载代理账号管理页面
-            loadPage('proxyAccount');
-            
+        // ========== 页面导航和加载 ==========
+        function bindMenuEvents() {
             // 绑定导航菜单点击事件
             document.querySelectorAll('.menu-item').forEach(item => {
                 item.addEventListener('click', function() {
-                    // 移除所有active状态
                     document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                    // 给当前点击项添加active
                     this.classList.add('active');
-                    // 加载对应页面
                     loadPage(this.getAttribute('data-target'));
                 });
             });
-        });
+        }
 
-        // 加载指定页面
         function loadPage(pageName) {
             const contentArea = document.getElementById('contentArea');
             let pageHTML = '';
@@ -400,13 +408,13 @@
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>用户名</th>
-                                        <th>密码</th>
-                                        <th>账号类型</th>
-                                        <th>创建时间</th>
-                                        <th>状态</th>
-                                        <th>操作</th>
+                                        <<th>ID</</th>
+                                        <<th>用户名</</th>
+                                        <<th>密码</</th>
+                                        <<th>账号类型</</th>
+                                        <<th>创建时间</</th>
+                                        <<th>状态</</th>
+                                        <<th>操作</</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -482,7 +490,6 @@
 
                 // 4. 操作日志查看
                 case 'operationLog':
-                    // 模拟操作日志数据
                     const logs = [
                         { id: 1, operator: 'ak', action: '添加代理账号', target: 'testproxy', time: '2026-02-02 10:00' },
                         { id: 2, operator: 'ak', action: '登录系统', target: '管理后台', time: '2026-02-02 10:05' },
@@ -499,11 +506,11 @@
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th>日志ID</th>
-                                        <th>操作人</th>
-                                        <th>操作类型</th>
-                                        <th>操作目标</th>
-                                        <th>操作时间</th>
+                                        <<th>日志ID</</th>
+                                        <<th>操作人</</th>
+                                        <<th>操作类型</</th>
+                                        <<th>操作目标</</th>
+                                        <<th>操作时间</</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -553,9 +560,7 @@
                     pageHTML = '<div class="card"><p>页面不存在</p></div>';
             }
 
-            // 渲染页面内容
             contentArea.innerHTML = pageHTML;
-            // 绑定表单提交事件
             bindFormEvents(pageName);
         }
 
@@ -563,79 +568,76 @@
         function bindFormEvents(pageName) {
             if (pageName === 'proxyAccount') {
                 const addForm = document.getElementById('addUserForm');
-                addForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const username = document.getElementById('newUsername').value.trim();
-                    const password = document.getElementById('newPassword').value.trim();
-                    const role = document.getElementById('newRole').value;
+                if (addForm) {
+                    addForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const username = document.getElementById('newUsername').value.trim();
+                        const password = document.getElementById('newPassword').value.trim();
+                        const role = document.getElementById('newRole').value;
 
-                    // 验证用户名是否重复
-                    const isDuplicate = systemUsers.some(u => u.username === username);
-                    if (isDuplicate) {
-                        alert('用户名已存在，请更换！');
-                        return;
-                    }
+                        // 验证用户名是否重复
+                        const isDuplicate = systemUsers.some(u => u.username === username);
+                        if (isDuplicate) {
+                            alert('用户名已存在，请更换！');
+                            return;
+                        }
 
-                    // 创建新账号
-                    const newUser = {
-                        id: Date.now(), // 用时间戳作为唯一ID
-                        username: username,
-                        password: password,
-                        role: role,
-                        status: 'active',
-                        createTime: new Date().toLocaleDateString()
-                    };
+                        // 创建新账号
+                        const newUser = {
+                            id: Date.now(),
+                            username: username,
+                            password: password,
+                            role: role,
+                            status: 'active',
+                            createTime: new Date().toLocaleDateString()
+                        };
 
-                    // 添加到数组并保存
-                    systemUsers.push(newUser);
-                    localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-                    
-                    alert(`账号 ${username} 创建成功！`);
-                    addForm.reset();
-                    // 刷新页面
-                    loadPage('systemConfig');
-                });
+                        // 保存新账号
+                        systemUsers.push(newUser);
+                        localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
+                        
+                        alert(`账号 ${username} 创建成功！`);
+                        addForm.reset();
+                        loadPage('systemConfig');
+                    });
+                }
             }
         }
 
         // ========== 核心功能函数 ==========
-        // 切换账号状态（启用/禁用）
         function toggleStatus(userId) {
             const user = systemUsers.find(u => u.id === userId);
             if (user) {
                 user.status = user.status === 'active' ? 'disabled' : 'active';
                 localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-                loadPage('systemConfig'); // 刷新页面
+                loadPage('systemConfig');
                 alert(`账号 ${user.username} 已${user.status === 'active' ? '启用' : '禁用'}！`);
             }
         }
 
-        // 删除账号
         function deleteUser(userId) {
             if (confirm('确定要删除该账号吗？删除后不可恢复！')) {
                 systemUsers = systemUsers.filter(u => u.id !== userId);
                 localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-                loadPage('systemConfig'); // 刷新页面
+                loadPage('systemConfig');
                 alert('账号删除成功！');
             }
         }
 
-        // 导出日志
         function exportLogs() {
             alert('日志已导出为Excel文件！（模拟功能）');
         }
 
-        // 保存权限设置
         function savePermission() {
             const userId = document.getElementById('permissionUser').value;
             alert(`已为账号ID ${userId} 保存权限设置！`);
         }
 
-        // 退出登录
         function logout() {
             if (confirm('确定要退出登录吗？')) {
                 localStorage.removeItem('loginUser');
-                window.location.href = window.location.href.replace('admin.html', 'index.html');
+                const baseUrl = window.location.href.replace('admin.html', '');
+                window.location.href = baseUrl + 'index.html';
             }
         }
     </script>
