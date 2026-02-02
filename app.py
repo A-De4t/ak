@@ -1,85 +1,101 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, abort
 from flask_cors import CORS
-import time  # 新增：用于计时锁定
+import time
+from datetime import timedelta
 
 app = Flask(__name__)
-app.secret_key = "simple_secret_key_2026_ak_super_admin"  # 轻微升级密钥
-from datetime import timedelta  # 必须导入timedelta
+# 1. 升级秘钥，提高安全性
+app.secret_key = "AK_SuperAdmin_2026_Proxy_Manager_Secret"
+# 2. 设置登录态1小时有效期，无操作自动退出
 app.permanent_session_lifetime = timedelta(hours=1)
-CORS(app, supports_credentials=True)
+# 3. 核心：允许GitHub Pages和本地跨域（关键适配公网访问）
+CORS(app, supports_credentials=True, origins=[
+    "https://a-de4t.github.io",  # GitHub Pages公网地址
+    "http://127.0.0.1:5500",     # 本地Live Server地址
+    "http://localhost:5500"      # 本地备用地址
+])
 
-# 🔥 超级管理员账号（替换为你的高强度密码）
-VALID_USERS = {
-    "ak": {"password": "AkAdmin@2026#Pro", "role": "super_admin"}
+# 🔥 账号配置：超级管理员（你）+ 普通代理账号
+USER_LIST = {
+    # 你的超级管理员账号
+    "ak": {"password": "2026", "role": "admin"},
+    # 普通代理账号（示例）
+    "proxy001": {"password": "proxy001@2026", "role": "proxy"},
+    "proxy002": {"password": "proxy002@2026", "role": "proxy"}
 }
 
-# 登录失败次数追踪（全局变量，本地部署足够用）
+# 🔥 防暴力破解配置
 login_attempts = {}
-MAX_ATTEMPTS = 5  # 最大失败次数
-LOCKOUT_TIME = 900  # 锁定时间：900秒=15分钟
+MAX_ERROR_TIMES = 5
+LOCK_TIME = 900
 
-# 登录接口（增加防暴力破解逻辑）
+# 👉 登录接口
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
 
-    # 步骤1：校验是否是唯一管理员账号，非ak直接拒绝
-    if username not in VALID_USERS:
-        return jsonify({"success": False, "message": "无此账号，无登录权限！"})
+    if not username or not password:
+        return jsonify({"success": False, "message": "账号和密码不能为空！"})
+    if username not in USER_LIST:
+        return jsonify({"success": False, "message": "账号不存在！"})
     
-    # 步骤2：检查账号是否被锁定
+    # 检查锁定状态
     if username in login_attempts:
-        attempts = login_attempts[username]['attempts']
-        last_attempt = login_attempts[username]['last_attempt']
-        # 失败次数超限制 + 锁定时间未到 → 拒绝登录
-        if attempts >= MAX_ATTEMPTS and (time.time() - last_attempt) < LOCKOUT_TIME:
-            remaining = int(LOCKOUT_TIME - (time.time() - last_attempt)) // 60
-            return jsonify({"success": False, "message": f"连续5次密码错误，账号锁定15分钟！剩余{remaining}分钟"})
-        # 锁定时间已到 → 重置失败次数
-        elif attempts >= MAX_ATTEMPTS and (time.time() - last_attempt) >= LOCKOUT_TIME:
-            login_attempts.pop(username)
-
-    # 步骤3：校验密码
-    if VALID_USERS[username]["password"] == password:
-        # 密码正确 → 重置失败次数，保存登录态
-        login_attempts.pop(username, None)
+        error_info = login_attempts[username]
+        if error_info['times'] >= MAX_ERROR_TIMES and (time.time() - error_info['last_time']) < LOCK_TIME:
+            remain_min = int((LOCK_TIME - (time.time() - error_info['last_time'])) // 60)
+            return jsonify({"success": False, "message": f"连续5次密码错误，账号锁定15分钟！剩余{remain_min}分钟"})
+        elif error_info['times'] >= MAX_ERROR_TIMES:
+            del login_attempts[username]
+    
+    # 校验密码
+    if USER_LIST[username]['password'] == password:
+        if username in login_attempts:
+            del login_attempts[username]
         session['username'] = username
-        session['role'] = VALID_USERS[username]["role"]
+        session['role'] = USER_LIST[username]['role']
         return jsonify({
-            "success": True, 
-            "message": "超级管理员登录成功！", 
-            "user": username,
-            "role": VALID_USERS[username]["role"]
+            "success": True,
+            "message": f"{USER_LIST[username]['role']=='admin'?'超级管理员':'代理'}登录成功！"，
+            "username": username,
+            "role": USER_LIST[username]['role']
         })
     else:
-        # 密码错误 → 记录失败次数和时间
         if username not in login_attempts:
-            login_attempts[username] = {"attempts": 1, "last_attempt": time.time()}
+            login_attempts[username] = {"times": 1, "last_time": time.time()}
         else:
-            login_attempts[username]["attempts"] += 1
-            login_attempts[username]["last_attempt"] = time.time()
-        remaining = MAX_ATTEMPTS - login_attempts[username]["attempts"]
-        return jsonify({"success": False, "message": f"密码错误！剩余{remaining}次尝试机会"})
+            login_attempts[username]['times'] += 1
+            login_attempts[username]['last_time'] = time.time()
+        remain_times = MAX_ERROR_TIMES - login_attempts[username]['times']
+        return jsonify({"success": False, "message": f"密码错误！剩余{remain_times}次尝试机会"})
 
-# 校验登录态+权限
-@app.route('/api/check', methods=['GET'])
-def check_login():
-    if 'username' in session and session['role'] == 'super_admin':
+# 👉 权限校验接口
+@app.route('/api/check-auth', methods=['GET'])
+def check_auth():
+    if 'username' in session and 'role' in session and session['username'] in USER_LIST:
         return jsonify({
-            "is_login": True, 
+            "is_login": True,
             "username": session['username'],
-            "role": session.get('role', '')
+            "role": session['role']
         })
-    return jsonify({"is_login": False, "role": ""})
+    return jsonify({"is_login": False, "message": "未登录或登录态已失效"})
 
-# 退出登录
+# 👉 退出登录接口
 @app.route('/api/logout', methods=['GET'])
 def logout():
     session.pop('username', None)
     session.pop('role', None)
     return jsonify({"success": True, "message": "退出登录成功！"})
 
+# 👉 获取代理列表接口
+@app.route('/api/get-proxies', methods=['GET'])
+def get_proxies():
+    if 'username' in session and session['role'] == 'admin':
+        proxies = {k: v for k, v in USER_LIST.items() if v['role'] == 'proxy'}
+        return jsonify({"success": True, "proxies": proxies})
+    return jsonify({"success": False, "message": "无权限访问！"})
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000)
