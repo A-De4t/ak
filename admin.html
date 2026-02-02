@@ -2,154 +2,336 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>管理后台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统超级管理后台</title>
+    <!-- 仅保留必要图标 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
     <style>
-        /* 全局极简样式 */
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Microsoft Yahei"; }
-        body { display: flex; min-height: 100vh; background: #f5f5f5; }
-
-        /* 侧边栏（仅保留核心导航） */
-        .sidebar {
-            width: 160px;
-            background: #222;
-            color: #fff;
-            padding: 20px 0;
+        /* 全局基础：简洁统一 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", "PingFang SC", sans-serif;
+            color: #333;
         }
-        .sidebar h3 { padding: 0 15px; margin-bottom: 20px; }
-        .menu { padding: 10px 15px; cursor: pointer; }
-        .menu.active { background: #444; color: #409EFF; }
+        body {
+            background-color: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-        /* 主内容区（去除冗余嵌套） */
-        .main {
+        /* 头部：简洁不冗余 */
+        .header {
+            background-color: #ffffff;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo {
+            width: 32px;
+            height: 32px;
+            background-color: #409EFF;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .logo-text {
+            font-size: 18px;
+            font-weight: 500;
+            color: #409EFF;
+        }
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #409EFF;
+            cursor: pointer;
+        }
+
+        /* 主体容器：布局清晰 */
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
+
+        /* 侧边栏：层级清晰，无多余装饰 */
+        .sidebar {
+            width: 180px;
+            background-color: #ffffff;
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.03);
+            padding-top: 20px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+            transition: background 0.2s;
+        }
+        .menu-item:hover {
+            background-color: #f5f7fa;
+        }
+        .menu-item.active {
+            background-color: #f0f7ff;
+            border-left-color: #409EFF;
+            color: #409EFF;
+        }
+        .menu-icon {
+            font-size: 16px;
+        }
+
+        /* 内容区：留白合理，视觉舒适 */
+        .content {
             flex: 1;
             padding: 20px;
+            overflow-y: auto;
         }
-        .header {
-            display: flex;
-            justify-content: space-between;
+        .content-title {
+            font-size: 18px;
+            font-weight: 500;
             margin-bottom: 20px;
         }
-        .btn {
-            padding: 6px 12px;
+        .card {
+            background-color: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+            padding: 20px;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .btn-add {
+            height: 32px;
+            padding: 0 12px;
+            background-color: #409EFF;
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            color: #fff;
+            transition: background 0.2s;
         }
-        .btn-add { background: #409EFF; }
-        .btn-logout { background: #F56C6C; }
+        .btn-add:hover {
+            background-color: #3393FF;
+        }
 
-        /* 表格（简化样式，仅保留必要区分） */
-        .table {
+        /* 表格：易读，无多余样式 */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            background: #fff;
-            border-radius: 4px;
-            overflow: hidden;
+            font-size: 14px;
         }
-        .table th, .table td {
+        .data-table th,
+        .data-table td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #f0f2f5;
         }
-        .table th { background: #f8f8f8; }
-        .status-active { color: #67C23A; }
-        .status-disabled { color: #E6A23C; }
-        .btn-group button {
-            padding: 4px 8px;
-            margin-right: 5px;
+        .data-table th {
+            background-color: #f5f7fa;
+            color: #666;
+            font-weight: 500;
+        }
+        .data-table tr:hover {
+            background-color: #f9fafc;
+        }
+        .status-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
             font-size: 12px;
+            color: white;
         }
-        .btn-disable { background: #E6A23C; }
-        .btn-enable { background: #67C23A; }
-        .btn-delete { background: #F56C6C; }
+        .status-active {
+            background-color: #67C23A;
+        }
+        .status-disabled {
+            background-color: #E6A23C;
+        }
+        .table-action {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+        .btn-disable { background-color: #E6A23C; }
+        .btn-enable { background-color: #67C23A; }
+        .btn-delete { background-color: #F56C6C; }
     </style>
 </head>
 <body>
-    <!-- 侧边栏（仅保留核心菜单） -->
-    <div class="sidebar">
-        <h3>管理后台</h3>
-        <div class="menu">仪表盘</div>
-        <div class="menu active">用户管理</div>
-        <div class="menu">订单统计</div>
+    <!-- 头部 -->
+    <div class="header">
+        <div class="logo-area">
+            <div class="logo"><i class="fa fa-diamond"></i></div>
+            <div class="logo-text">管理后台</div>
+        </div>
+        <div class="user-area">
+            <div class="user-avatar"><i class="fa fa-user"></i></div>
+        </div>
     </div>
 
-    <!-- 主内容区（核心功能） -->
-    <div class="main">
-        <div class="header">
-            <h2>用户管理</h2>
-            <button class="btn btn-logout">退出</button>
+    <!-- 主体容器 -->
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="menu-item">
+                <i class="fa fa-home menu-icon"></i>
+                <span>仪表盘</span>
+            </div>
+            <div class="menu-item active">
+                <i class="fa fa-users menu-icon"></i>
+                <span>用户管理</span>
+            </div>
+            <div class="menu-item">
+                <i class="fa fa-list-alt menu-icon"></i>
+                <span>订单统计</span>
+            </div>
+            <div class="menu-item">
+                <i class="fa fa-cog menu-icon"></i>
+                <span>系统设置</span>
+            </div>
         </div>
 
-        <button class="btn btn-add">新增用户</button>
-        <table class="table">
-            <thead>
-                <tr>
-                    <<<th>ID</</</th>
-                    <<<th>用户名</</</th>
-                    <<<th>账号类型</</th>
-                    <<<th>状态</</th>
-                    <<<th>操作</</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>1</td>
-                    <td>ak</td>
-                    <td>超级管理员</td>
-                    <td class="status-active">活跃</td>
-                    <td>不可操作</td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>az</td>
-                    <td>代理账号</td>
-                    <td class="status-active">活跃</td>
-                    <td class="btn-group">
-                        <button class="btn btn-disable">禁用</button>
-                        <button class="btn btn-delete">删除</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>testproxy</td>
-                    <td>代理账号</td>
-                    <td class="status-disabled">禁用</td>
-                    <td class="btn-group">
-                        <button class="btn btn-enable">启用</button>
-                        <button class="btn btn-delete">删除</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <!-- 内容区 -->
+        <div class="content">
+            <div class="content-title">用户管理</div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">用户数据列表</div>
+                    <button class="btn-add"><i class="fa fa-plus"></i> 新增用户</button>
+                </div>
+                
+                <!-- 表格 -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>用户名</th>
+                            <th>账号类型</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>ak</td>
+                            <td>超级管理员</td>
+                            <td><span class="status-tag status-active">活跃</span></td>
+                            <td><span style="color:#999;font-size:12px;">不可操作</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>az</td>
+                            <td>代理账号</td>
+                            <td><span class="status-tag status-active">活跃</span></td>
+                            <td class="table-action">
+                                <button class="action-btn btn-disable">禁用</button>
+                                <button class="action-btn btn-delete">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>as</td>
+                            <td>代理账号</td>
+                            <td><span class="status-tag status-active">活跃</span></td>
+                            <td class="table-action">
+                                <button class="action-btn btn-disable">禁用</button>
+                                <button class="action-btn btn-delete">删除</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>testproxy</td>
+                            <td>代理账号</td>
+                            <td><span class="status-tag status-disabled">禁用</span></td>
+                            <td class="table-action">
+                                <button class="action-btn btn-enable">启用</button>
+                                <button class="action-btn btn-delete">删除</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
-        // 合并重复逻辑：菜单切换 + 按钮功能
-        document.querySelectorAll('.menu').forEach(item => {
-            item.onclick = () => document.querySelectorAll('.menu').forEach(i => i.classList.toggle('active', i === item));
+        // 侧边栏菜单切换
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
+            });
         });
 
-        document.querySelectorAll('.btn-disable, .btn-enable').forEach(btn => {
-            btn.onclick = function() {
+        // 操作按钮逻辑
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
                 const tr = this.closest('tr');
-                const status = tr.querySelector('td:nth-child(4)');
+                const statusTag = tr.querySelector('.status-tag');
+                
+                // 禁用/启用切换
                 if (this.classList.contains('btn-disable')) {
-                    this.className = 'btn btn-enable';
                     this.textContent = '启用';
-                    status.className = 'status-disabled';
-                    status.textContent = '禁用';
-                } else {
-                    this.className = 'btn btn-disable';
+                    this.className = 'action-btn btn-enable';
+                    statusTag.className = 'status-tag status-disabled';
+                    statusTag.textContent = '禁用';
+                } else if (this.classList.contains('btn-enable')) {
                     this.textContent = '禁用';
-                    status.className = 'status-active';
-                    status.textContent = '活跃';
+                    this.className = 'action-btn btn-disable';
+                    statusTag.className = 'status-tag status-active';
+                    statusTag.textContent = '活跃';
+                } 
+                // 删除逻辑
+                else if (this.classList.contains('btn-delete')) {
+                    if (confirm('确定删除该用户吗？')) tr.remove();
                 }
-            }
-        });
-
-        document.querySelectorAll('.btn-delete').forEach(btn => {
-            btn.onclick = () => confirm('确定删除？') && btn.closest('tr').remove();
+            });
         });
     </script>
 </body>
