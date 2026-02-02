@@ -1,327 +1,91 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理员后台</title>
-  <link rel="stylesheet" href="common.css">
-  <style>
-    .admin-box { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding: 20px; min-height: 80vh; }
-    .left-menu { background: #2c3e50; border-radius: 8px; padding: 20px; }
-    .left-menu h3 { color: white; margin: 0 0 20px; padding-bottom: 10px; border-bottom: 1px solid #444; }
-    .left-menu a { display: block; color: #fff; text-decoration: none; padding: 10px; margin: 8px 0; border-radius: 4px; }
-    .left-menu a.active, .left-menu a:hover { background: #3498db; }
-    .right-content { background: #fff; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .panel { display: none; }
-    .panel.show { display: block; }
-    .form-item { margin: 20px 0; max-width: 400px; }
-    .form-item label { display: block; margin-bottom: 8px; color: #333; font-weight: 500; }
-    .form-item input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; outline: none; }
-    .form-item input:focus { border-color: #3498db; }
-    .btn { padding: 10px 20px; border: none; border-radius: 4px; background: #3498db; color: white; cursor: pointer; width: 100%; max-width: 400px; }
-    .btn-sm { padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; margin: 0 3px; }
-    .btn-danger { background: #e74c3c; color: white; }
-    .btn-reset { background: #f39c12; color: white; }
-    .btn-toggle { background: #95a5a6; color: white; }
-    .stat-card { display: inline-block; width: 180px; padding: 15px; margin: 0 10px 10px 0; background: #f8f9fa; border-radius: 6px; text-align: center; }
-    .stat-card .num { font-size: 22px; font-weight: bold; color: #2c3e50; margin: 5px 0; }
-    .table-simple { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    .table-simple th, .table-simple td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-    .table-simple th { background: #f8f9fa; }
-    .empty-tip { color: #999; padding: 30px 0; text-align: center; }
-    .status-on { color: #27ae60; font-weight: 500; }
-    .status-off { color: #e74c3c; font-weight: 500; }
-    @media (max-width: 768px) { .admin-box { grid-template-columns: 1fr; } }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统管理后台</title>
+    <style>
+        /* 和登录页样式统一，保持视觉一致 */
+        * {margin: 0; padding: 0; box-sizing: border-box;}
+        body {background: #f5f5f5; font-family: "Microsoft YaHei";}
+        .admin-header {background: #1890ff; color: #fff; padding: 20px; display: flex; justify-content: space-between; align-items: center;}
+        .admin-header h2 {font-weight: normal;}
+        .admin-content {width: 1200px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+        .admin-info {font-size: 18px; color: #666; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee;}
+        .admin-btn {padding: 8px 16px; background: #ff4d4f; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;}
+        .admin-btn:hover {background: #ff7875;}
+        .module {margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 4px;}
+        .module h3 {color: #333; margin-bottom: 10px; font-size: 16px;}
+    </style>
 </head>
 <body>
-  <div class="page-header" style="padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
-    <h2>管理员后台 - <span id="adminName">ak</span></h2>
-    <button class="btn-danger" onclick="logout()" style="width: auto; padding: 6px 12px;">安全退出</button>
-  </div>
-
-  <div class="admin-box">
-    <div class="left-menu">
-      <h3>管理菜单</h3>
-      <a href="javascript:;" class="active" onclick="showPanel('panel1')">数据概览</a>
-      <a href="javascript:;" onclick="showPanel('panel2')">代理数据</a>
-      <a href="javascript:;" onclick="showPanel('panel3')">添加代理</a>
-      <a href="javascript:;" onclick="showPanel('panel4')">文件管理</a>
-      <a href="javascript:;" onclick="showPanel('panel5')">系统日志</a>
+    <div class="admin-header">
+        <h2>系统管理后台</h2>
+        <button class="admin-btn" onclick="logout()">退出登录</button>
+    </div>
+    <div class="admin-content">
+        <div class="admin-info">
+            欢迎您，<span id="login-username" style="color: #1890ff; font-weight: bold;"></span>！
+        </div>
+        <div class="module">
+            <h3>管理后台功能区</h3>
+            <p>可在此添加用户管理、数据统计、代理设置等功能...</p>
+        </div>
+        <div class="module">
+            <h3>代理账号功能区</h3>
+            <p>可在此添加代理数据查看、订单管理等功能...</p>
+        </div>
     </div>
 
-    <div class="right-content">
-      <div class="panel show" id="panel1">
-        <h2>数据概览</h2>
-        <div class="stat-card"><div class="num" id="t1">0</div><div>总代理数</div></div>
-        <div class="stat-card"><div class="num" id="t2">0</div><div>启用代理数</div></div>
-        <div class="stat-card"><div class="num" id="t3">0</div><div>总文件数</div></div>
-        <div class="stat-card"><div class="num" id="t4">0</div><div>操作日志数</div></div>
-      </div>
+    <script>
+        // 页面加载时立即校验登录态：未登录则强制返回登录页
+        window.onload = function() {
+            checkLoginStatus();
+        }
 
-      <div class="panel" id="panel2">
-        <h2>代理数据</h2>
-        <input type="text" placeholder="搜索用户名" oninput="filterProxy()" style="padding: 8px; width: 250px; margin-bottom: 10px;">
-        <table class="table-simple" id="proxyTable">
-          <thead><tr><th>序号</th><th>用户名</th><th>状态</th><th>最后登录</th><th>操作</th></tr></thead>
-          <tbody><tr><td colspan="5" class="empty-tip">暂无代理数据</td></tr></tbody>
-        </table>
-      </div>
+        // 校验登录态接口
+        function checkLoginStatus() {
+            fetch('http://127.0.0.1:5000/api/check-login', {
+                method: 'GET',
+                credentials: 'include' // 携带cookie，验证登录态
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.is_login) {
+                    // 未登录：强制跳转到登录页
+                    alert("请先登录！");
+                    window.location.href = 'login.html';
+                } else {
+                    // 已登录：显示当前用户名
+                    document.getElementById("login-username").innerText = data.username;
+                }
+            })
+            .catch(error => {
+                console.error('校验登录态失败：', error);
+                alert('网络错误！请检查后端是否启动');
+                window.location.href = 'login.html';
+            });
+        }
 
-      <div class="panel" id="panel3">
-        <h2>添加代理账号</h2>
-        <div class="form-item">
-          <label>代理用户名 <span style="color: red;">*</span></label>
-          <input type="text" id="proxyName" placeholder="请输入新用户名，如daily">
-        </div>
-        <div class="form-item">
-          <label>代理密码 <span style="color: red;">*</span></label>
-          <input type="password" id="proxyPwd" placeholder="请输入登录密码">
-        </div>
-        <button class="btn" onclick="addProxy()">确认添加代理</button>
-      </div>
-
-      <div class="panel" id="panel4">
-        <h2>文件管理</h2>
-        <input type="text" placeholder="搜索代理/文件名" oninput="filterFile()" style="padding: 8px; width: 250px; margin-bottom: 10px;">
-        <table class="table-simple" id="fileTable">
-          <thead><tr><th>序号</th><th>所属代理</th><th>文件名</th><th>操作</th></tr></thead>
-          <tbody><tr><td colspan="4" class="empty-tip">暂无文件数据</td></tr></tbody>
-        </table>
-      </div>
-
-      <div class="panel" id="panel5">
-        <h2>系统日志</h2>
-        <table class="table-simple" id="logTable">
-          <thead><tr><th>序号</th><th>时间</th><th>操作人</th><th>操作</th></tr></thead>
-          <tbody><tr><td colspan="4" class="empty-tip">暂无操作日志</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <script src="common.js"></script>
-  <script>
-    // 配置常量
-    const CONFIG = {
-      SUPER_ADMIN: { username: 'ak', password: '2026', role: 'admin', status: 'active' },
-      ADMIN_PAGE: 'admin.html',
-      PROXY_PAGE: 'proxy.html'
-    };
-
-    // 本地存储操作封装
-    function getLocalData(key) {
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : null;
-    }
-    function setLocalData(key, data) {
-      localStorage.setItem(key, JSON.stringify(data));
-    }
-
-    // 权限验证
-    function checkAuth(role) {
-      const user = getLocalData('currentLoginUser');
-      return user && user.length > 0 && user[0].role === role ? user[0] : null;
-    }
-    function logout() {
-      localStorage.removeItem('currentLoginUser');
-      location.href = 'index.html';
-    }
-
-    // 初始化
-    const currentUser = checkAuth('admin');
-    if (!currentUser) location.href = 'index.html';
-    document.getElementById('adminName').innerText = currentUser.username;
-
-    // 确保数据结构正确
-    let sysUser = getLocalData('systemUsers');
-    if (!sysUser || sysUser.length === 0) sysUser = [CONFIG.SUPER_ADMIN];
-    let sysFile = getLocalData('allFiles') || {};
-    let sysLog = getLocalData('systemLogs') || [];
-
-    window.onload = () => { initAll(); };
-
-    // 菜单切换
-    function showPanel(panelId) {
-      document.querySelectorAll('.left-menu a').forEach(a => a.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('show'));
-      event.target.classList.add('active');
-      document.getElementById(panelId).classList.add('show');
-    }
-
-    // 添加代理
-    function addProxy() {
-      const name = document.getElementById('proxyName').value.trim();
-      const pwd = document.getElementById('proxyPwd').value.trim();
-      if (!name || !pwd) { alert('请填写完整信息！'); return; }
-      if (sysUser.some(u => u.username === name)) { alert('用户名已存在！'); return; }
-      
-      sysUser.push({ 
-        username: name, 
-        password: pwd, 
-        role: 'proxy', 
-        status: 'active', 
-        lastLogin: '暂无登录' 
-      });
-      sysFile[name] = [];
-      saveAllData();
-      addLog(`添加代理【${name}】`);
-      initAll();
-      document.getElementById('proxyName').value = '';
-      document.getElementById('proxyPwd').value = '';
-      alert(`代理【${name}】添加成功！`);
-      showPanel('panel2');
-    }
-
-    // 切换代理状态
-    function toggleProxy(name) {
-      const proxy = sysUser.find(u => u.username === name);
-      if (!proxy) return;
-      const oldStatus = proxy.status;
-      const newStatus = oldStatus === 'active' ? 'disabled' : 'active';
-      
-      sysUser = sysUser.map(u => u.username === name ? { ...u, status: newStatus } : u);
-      saveAllData();
-      addLog(`${oldStatus === 'active' ? '禁用' : '启用'}代理【${name}】`);
-      initAll();
-      alert(`代理【${name}】已${oldStatus === 'active' ? '禁用' : '启用'}！`);
-    }
-
-    // 重置密码
-    function resetPwd(name) {
-      const newPwd = prompt(`请输入代理【${name}】的新密码：`, '123456');
-      if (newPwd === null || !newPwd.trim()) return;
-      
-      sysUser = sysUser.map(u => u.username === name ? { ...u, password: newPwd.trim() } : u);
-      saveAllData();
-      addLog(`重置代理【${name}】密码`);
-      initAll();
-      alert(`代理【${name}】密码重置成功！`);
-    }
-
-    // 删除代理
-    function delProxy(name) {
-      if (!confirm(`确定删除代理【${name}】及所有文件吗？`)) return;
-      
-      sysUser = sysUser.filter(u => u.username !== name);
-      delete sysFile[name];
-      saveAllData();
-      addLog(`删除代理【${name}】`);
-      initAll();
-      alert(`代理【${name}】已删除！`);
-    }
-
-    // 删除文件
-    function delFile(agentName, fileId) {
-      if (!confirm('确定删除该文件吗？')) return;
-      
-      sysFile[agentName] = sysFile[agentName].filter(f => f.id !== fileId);
-      saveAllData();
-      addLog(`删除【${agentName}】的文件`);
-      initAll();
-      alert('文件已删除！');
-    }
-
-    // 初始化数据与渲染
-    function initAll() {
-      const allProxy = sysUser.filter(u => u.role === 'proxy');
-      const activeProxy = allProxy.filter(u => u.status === 'active').length;
-      let totalFile = 0;
-      Object.values(sysFile).forEach(f => totalFile += f.length);
-      
-      document.getElementById('t1').innerText = allProxy.length;
-      document.getElementById('t2').innerText = activeProxy;
-      document.getElementById('t3').innerText = totalFile;
-      document.getElementById('t4').innerText = sysLog.length;
-
-      renderProxyTable();
-      renderFileTable();
-      renderLogTable();
-    }
-
-    // 渲染表格
-    function renderProxyTable() {
-      const allProxy = sysUser.filter(u => u.role === 'proxy');
-      const tb = document.querySelector('#proxyTable tbody');
-      if (allProxy.length === 0) {
-        tb.innerHTML = '<tr><td colspan="5" class="empty-tip">暂无代理数据</td></tr>';
-        return;
-      }
-      tb.innerHTML = allProxy.map((u, i) => `
-        <tr>
-          <td>${i+1}</td>
-          <td>${u.username}</td>
-          <td class="${u.status==='active'?'status-on':'status-off'}">${u.status==='active'?'已启用':'已禁用'}</td>
-          <td>${u.lastLogin || '暂无登录'}</td>
-          <td>
-            <button class="btn-sm btn-toggle" onclick="toggleProxy('${u.username}')">${u.status==='active'?'禁用':'启用'}</button>
-            <button class="btn-sm btn-reset" onclick="resetPwd('${u.username}')">重置密码</button>
-            <button class="btn-sm btn-danger" onclick="delProxy('${u.username}')">删除</button>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function renderFileTable() {
-      let files = [];
-      Object.keys(sysFile).forEach(a => sysFile[a].forEach(f => files.push({a, ...f})));
-      const tb = document.querySelector('#fileTable tbody');
-      if (files.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无文件数据</td></tr>';
-        return;
-      }
-      tb.innerHTML = files.map((f, i) => `
-        <tr>
-          <td>${i+1}</td>
-          <td>${f.a}</td>
-          <td>${f.name}</td>
-          <td>
-            <a href="${f.url || '#'}" target="_blank" style="color:#3498db;">查看</a> | 
-            <a href="javascript:;" onclick="delFile('${f.a}',${f.id})" style="color:red;">删除</a>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function renderLogTable() {
-      const tb = document.querySelector('#logTable tbody');
-      if (sysLog.length === 0) {
-        tb.innerHTML = '<tr><td colspan="4" class="empty-tip">暂无操作日志</td></tr>';
-        return;
-      }
-      tb.innerHTML = sysLog.reverse().map((l, i) => `
-        <tr><td>${i+1}</td><td>${l.time}</td><td>${l.operator}</td><td>${l.type}</td></tr>
-      `).join('');
-    }
-
-    // 筛选功能
-    function filterProxy() {
-      const k = document.querySelector('#panel2 input').value.toLowerCase();
-      document.querySelectorAll('#proxyTable tbody tr').forEach(r => {
-        r.style.display = r.cells[1].textContent.toLowerCase().includes(k) ? '' : 'none';
-      });
-    }
-    function filterFile() {
-      const k = document.querySelector('#panel4 input').value.toLowerCase();
-      document.querySelectorAll('#fileTable tbody tr').forEach(r => {
-        r.style.display = (r.cells[1].textContent.includes(k) || r.cells[2].textContent.includes(k)) ? '' : 'none';
-      });
-    }
-
-    // 数据保存与日志
-    function saveAllData() {
-      setLocalData('systemUsers', sysUser);
-      setLocalData('allFiles', sysFile);
-      setLocalData('systemLogs', sysLog);
-    }
-    function addLog(type) {
-      sysLog.push({
-        time: new Date().toLocaleString(),
-        operator: currentUser.username,
-        type: type
-      });
-      saveAllData();
-    }
-  </script>
+        // 退出登录函数
+        function logout() {
+            if (confirm("确定要退出登录吗？")) {
+                fetch('http://127.0.0.1:5000/api/logout', {
+                    method: 'GET',
+                    credentials: 'include'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    // 退出成功：返回登录页
+                    window.location.href = 'login.html';
+                })
+                .catch(error => {
+                    console.error('退出登录失败：', error);
+                    alert('退出失败，请稍后重试');
+                });
+            }
+        }
+    </script>
 </body>
 </html>
