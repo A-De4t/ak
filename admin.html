@@ -4,88 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系统管理后台</title>
-    <style>
-        /* 和登录页样式统一，保持视觉一致 */
-        * {margin: 0; padding: 0; box-sizing: border-box;}
-        body {background: #f5f5f5; font-family: "Microsoft YaHei";}
-        .admin-header {background: #1890ff; color: #fff; padding: 20px; display: flex; justify-content: space-between; align-items: center;}
-        .admin-header h2 {font-weight: normal;}
-        .admin-content {width: 1200px; margin: 50px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
-        .admin-info {font-size: 18px; color: #666; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #eee;}
-        .admin-btn {padding: 8px 16px; background: #ff4d4f; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;}
-        .admin-btn:hover {background: #ff7875;}
-        .module {margin-bottom: 20px; padding: 15px; border: 1px solid #eee; border-radius: 4px;}
-        .module h3 {color: #333; margin-bottom: 10px; font-size: 16px;}
-    </style>
+    <link rel="stylesheet" href="common.css">
 </head>
 <body>
-    <div class="admin-header">
-        <h2>系统管理后台</h2>
-        <button class="admin-btn" onclick="logout()">退出登录</button>
-    </div>
-    <div class="admin-content">
-        <div class="admin-info">
-            欢迎您，<span id="login-username" style="color: #1890ff; font-weight: bold;"></span>！
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1>系统管理后台</h1>
+            <div>
+                欢迎，<span id="current-user"></span>
+                <button class="btn btn-danger" onclick="logout()">退出</button>
+            </div>
         </div>
-        <div class="module">
-            <h3>管理后台功能区</h3>
-            <p>可在此添加用户管理、数据统计、代理设置等功能...</p>
-        </div>
-        <div class="module">
-            <h3>代理账号功能区</h3>
-            <p>可在此添加代理数据查看、订单管理等功能...</p>
+
+        <div class="card">
+            <h3>管理功能区</h3>
+            <p>这里可以添加用户管理、数据统计等功能...</p>
         </div>
     </div>
 
+    <script src="common.js"></script>
     <script>
-        // 页面加载时立即校验登录态：未登录则强制返回登录页
-        window.onload = function() {
-            checkLoginStatus();
-        }
-
-        // 校验登录态接口
-        function checkLoginStatus() {
-            fetch('http://127.0.0.1:5000/api/check-login', {
-                method: 'GET',
-                credentials: 'include' // 携带cookie，验证登录态
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.is_login) {
-                    // 未登录：强制跳转到登录页
-                    alert("请先登录！");
-                    window.location.href = 'login.html';
-                } else {
-                    // 已登录：显示当前用户名
-                    document.getElementById("login-username").innerText = data.username;
-                }
-            })
-            .catch(error => {
-                console.error('校验登录态失败：', error);
-                alert('网络错误！请检查后端是否启动');
-                window.location.href = 'login.html';
-            });
-        }
-
-        // 退出登录函数
-        function logout() {
-            if (confirm("确定要退出登录吗？")) {
-                fetch('http://127.0.0.1:5000/api/logout', {
-                    method: 'GET',
-                    credentials: 'include'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    // 退出成功：返回登录页
-                    window.location.href = 'login.html';
-                })
-                .catch(error => {
-                    console.error('退出登录失败：', error);
-                    alert('退出失败，请稍后重试');
-                });
-            }
-        }
+        // 页面加载时自动校验登录
+        window.onload = protectPage;
     </script>
 </body>
 </html>
