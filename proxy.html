@@ -32,21 +32,29 @@
 
     <script src="script.js"></script>
     <script>
-        // 页面加载时验证是否已登录（防止直接访问）
-        if (!localStorage.getItem('loggedInUser')) {
-            window.location.href = 'index.html'; // 未登录则跳转到登录页
-        } else {
-            const user = JSON.parse(localStorage.getItem('loggedInUser'));
-            // 验证是否为代理（防止超级管理员冒充）
+        // 修复：适配 GitHub Pages 路径，强制使用相对路径验证
+        (function() {
+            // 1. 检查登录状态
+            const loggedInUserStr = localStorage.getItem('loggedInUser');
+            if (!loggedInUserStr) {
+                // 跳转到登录页（适配 GitHub Pages 路径）
+                window.location.href = window.location.origin + window.location.pathname.replace('proxy.html', 'index.html');
+                return;
+            }
+
+            // 2. 解析用户信息并验证角色/状态
+            const user = JSON.parse(loggedInUserStr);
             if (user.role !== 'proxy' || user.status !== 'active') {
                 localStorage.removeItem('loggedInUser');
-                alert(user.status !== 'active' ? '该账号已被禁用，请联系管理员！' : '无权限访问代理后台');
-                window.location.href = 'index.html';
+                alert(user.status !== 'active' ? '该账号已被禁用，请联系管理员！' : '无代理权限！');
+                window.location.href = window.location.origin + window.location.pathname.replace('proxy.html', 'index.html');
+                return;
             }
-            // 显示当前登录用户名
+
+            // 3. 显示用户名并初始化页面
             document.getElementById('proxyName').textContent = `欢迎您，(${user.username})`;
-            // 初始化代理后台页面
             initProxyDashboard();
-        }
+        })();
     </script>
 </body>
+</html>
