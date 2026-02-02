@@ -2,61 +2,38 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>超级管理员后台</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { margin: 0; padding: 2rem; background: #f5f7fa; }
+        .header { background: #2f80ed; color: white; padding: 1rem 2rem; }
+        button { padding: 0.5rem 1rem; cursor: pointer; }
+    </style>
 </head>
 <body>
     <div class="header">
-        <h1>系统超级管理后台</h1>
-        <div class="header-right">
-            <span id="adminName">欢迎您，(超级管理员)</span>
-            <button id="logoutBtn" class="btn">退出登录</button>
-        </div>
+        <h1>超级管理员后台</h1>
+        <button onclick="logout()">退出登录</button>
+    </div>
+    <div style="margin-top: 2rem;">
+        <h2>登录成功！当前用户：<span id="userName"></span></h2>
+        <p>你可以在这里添加/删除/管理代理账号（功能后续恢复）</p>
     </div>
 
-    <div class="main-container">
-        <!-- 左侧导航 -->
-        <div class="sidebar">
-            <h3>管理员专属功能</h3>
-            <div class="menu-item active" data-target="proxyAccount">代理账号管理</div>
-            <div class="menu-item" data-target="systemConfig">系统全局配置管理</div>
-            <div class="menu-item" data-target="dataView">所有代理数据查看/统计</div>
-            <div class="menu-item" data-target="operationLog">操作日志查看与导出</div>
-            <div class="menu-item" data-target="permission">系统权限分配</div>
-        </div>
-
-        <!-- 右侧内容 -->
-        <div class="content" id="contentArea">
-            <!-- 页面内容会通过 JS 动态加载 -->
-        </div>
-    </div>
-
-    <script src="script.js"></script>
     <script>
-        // 修复：适配 GitHub Pages 路径，强制使用相对路径验证
-        (function() {
-            // 1. 检查登录状态
-            const loggedInUserStr = localStorage.getItem('loggedInUser');
-            if (!loggedInUserStr) {
-                // 跳转到登录页（适配 GitHub Pages 路径）
-                window.location.href = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
-                return;
-            }
+        // 强制验证登录状态
+        const loginUser = JSON.parse(localStorage.getItem('loginUser') || '{}');
+        if (!loginUser.username || loginUser.role !== 'superAdmin') {
+            // 强制跳回登录页
+            window.location.href = window.location.href.replace('admin.html', 'index.html');
+        } else {
+            document.getElementById('userName').textContent = loginUser.username;
+        }
 
-            // 2. 解析用户信息并验证角色
-            const user = JSON.parse(loggedInUserStr);
-            if (user.role !== 'superAdmin') {
-                localStorage.removeItem('loggedInUser');
-                alert('无超级管理员权限！');
-                window.location.href = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
-                return;
-            }
-
-            // 3. 显示用户名并初始化页面
-            document.getElementById('adminName').textContent = `欢迎您，(${user.username})`;
-            initAdminDashboard();
-        })();
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('loginUser');
+            window.location.href = window.location.href.replace('admin.html', 'index.html');
+        }
     </script>
 </body>
 </html>
