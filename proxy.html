@@ -2,59 +2,38 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>代理操作后台</title>
-    <link rel="stylesheet" href="style.css">
+    <title>代理后台</title>
+    <style>
+        body { margin: 0; padding: 2rem; background: #f5f7fa; }
+        .header { background: #2f80ed; color: white; padding: 1rem 2rem; }
+        button { padding: 0.5rem 1rem; cursor: pointer; }
+    </style>
 </head>
 <body>
     <div class="header">
         <h1>代理操作后台</h1>
-        <div class="header-right">
-            <span id="proxyName">欢迎您，(代理用户)</span>
-            <button id="proxyLogoutBtn" class="btn">退出登录</button>
-        </div>
+        <button onclick="logout()">退出登录</button>
+    </div>
+    <div style="margin-top: 2rem;">
+        <h2>登录成功！当前代理：<span id="userName"></span></h2>
+        <p>你可以在这里查看代理数据（功能后续恢复）</p>
     </div>
 
-    <div class="main-container">
-        <!-- 左侧导航（仅显示代理可操作的功能） -->
-        <div class="sidebar">
-            <h3>代理专属功能</h3>
-            <div class="menu-item active" data-target="proxyData">我的代理数据</div>
-            <div class="menu-item" data-target="proxyProfile">个人信息管理</div>
-            <div class="menu-item" data-target="proxyLogs">我的操作日志</div>
-        </div>
-
-        <!-- 右侧内容 -->
-        <div class="content" id="proxyContentArea">
-            <!-- 页面内容会通过 JS 动态加载 -->
-        </div>
-    </div>
-
-    <script src="script.js"></script>
     <script>
-        // 修复：适配 GitHub Pages 路径，强制使用相对路径验证
-        (function() {
-            // 1. 检查登录状态
-            const loggedInUserStr = localStorage.getItem('loggedInUser');
-            if (!loggedInUserStr) {
-                // 跳转到登录页（适配 GitHub Pages 路径）
-                window.location.href = window.location.origin + window.location.pathname.replace('proxy.html', 'index.html');
-                return;
-            }
+        // 强制验证登录状态
+        const loginUser = JSON.parse(localStorage.getItem('loginUser') || '{}');
+        if (!loginUser.username || loginUser.role !== 'proxy') {
+            // 强制跳回登录页
+            window.location.href = window.location.href.replace('proxy.html', 'index.html');
+        } else {
+            document.getElementById('userName').textContent = loginUser.username;
+        }
 
-            // 2. 解析用户信息并验证角色/状态
-            const user = JSON.parse(loggedInUserStr);
-            if (user.role !== 'proxy' || user.status !== 'active') {
-                localStorage.removeItem('loggedInUser');
-                alert(user.status !== 'active' ? '该账号已被禁用，请联系管理员！' : '无代理权限！');
-                window.location.href = window.location.origin + window.location.pathname.replace('proxy.html', 'index.html');
-                return;
-            }
-
-            // 3. 显示用户名并初始化页面
-            document.getElementById('proxyName').textContent = `欢迎您，(${user.username})`;
-            initProxyDashboard();
-        })();
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('loginUser');
+            window.location.href = window.location.href.replace('proxy.html', 'index.html');
+        }
     </script>
 </body>
 </html>
