@@ -3,31 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系统超级管理员登录</title>
+    <title>系统登录 - 管理员/代理通用</title>
     <link rel="stylesheet" href="common.css">
 </head>
 <body>
-    <div class="login-box">
-        <!-- 标题改为超级管理员，明确唯一权限 -->
-        <h2>系统超级管理员登录</h2>
-        <div class="input-group">
-            <label for="username">管理员账号</label>
-            <input type="text" id="username" value="ak" placeholder="仅系统搭建者可登录">
+    <div class="login-container">
+        <h2>系统登录</h2>
+        <div class="input-box">
+            <label for="username">账号</label>
+            <input type="text" id="username" placeholder="请输入管理员/代理账号" value="ak" autocomplete="off">
         </div>
-        <div class="input-group">
-            <label for="password">管理员密码</label>
-            <input type="password" id="password" value="2026" placeholder="请输入超级管理员密码">
+        <div class="input-box">
+            <label for="password">密码</label>
+            <input type="password" id="password" placeholder="请输入密码" value="2026" autocomplete="off">
         </div>
-        <button class="btn btn-primary" style="width:100%" onclick="handleLogin()">立即登录</button>
+        <button class="login-btn" onclick="handleLogin()">立即登录</button>
     </div>
 
     <script src="common.js"></script>
     <script>
-        // 核心登录函数：仅ak/2026可登录，唯一跳管理后台
+        // 登录核心函数
         async function handleLogin() {
             const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value.trim();
-
             // 前端空值校验
             if (!username || !password) {
                 alert("账号和密码不能为空！");
@@ -35,24 +33,35 @@
             }
 
             try {
-                const response = await fetch(`${API_BASE}/login`, {
+                // 发送登录请求
+                const res = await fetch(`${API_BASE}/login`, {
                     method: "POST",
+                    credentials: "include",
                     headers: {"Content-Type": "application/json"},
-                    credentials: 'include', // 携带cookie，保存登录态
                     body: JSON.stringify({username, password})
                 });
-                const data = await response.json();
+                const data = await res.json();
                 alert(data.message);
-                // 仅登录成功时，跳转到管理后台（唯一后台入口）
+                // 登录成功 → 根据角色跳转专属页面
                 if (data.success) {
-    sessionStorage.setItem('login_time', new Date().getTime()); // 新增：记录登录时间
-    window.location.href = "admin.html";
-}
-            } catch (error) {
-                console.error("登录请求失败:", error);
-                alert("网络错误，请检查后端是否启动！");
+                    // 记录登录时间，用于自动退出
+                    sessionStorage.setItem("loginTime", new Date().getTime());
+                    // 超级管理员→管理后台；代理→代理操作页（GitHub地址，本地可改）
+                    const targetUrl = data.role === "admin" 
+                        ? "https://a-de4t.github.io/ak/admin.html" 
+                        : "https://a-de4t.github.io/ak/proxy.html";
+                    window.location.href = targetUrl;
+                }
+            } catch (err) {
+                console.error("登录请求失败：", err);
+                alert("登录失败！请检查：\n1. 后端服务是否启动\n2. API_BASE是否为正确的公网IP");
             }
         }
+
+        // 回车触发登录
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") handleLogin();
+        });
     </script>
 </body>
 </html>
