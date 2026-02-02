@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统入口 - 重定向中</title>
+    <!-- 自动重定向到登录页（1秒后跳转） -->
+    <meta http-equiv="refresh" content="1; url=login.html">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        .loading {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        .link {
+            color: #1890ff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">正在跳转到系统登录页...请稍候</div>
+    <p>如果未自动跳转，请点击：<a href="login.html" class="link">系统登录页</a></p>
+</body>
+</html>
