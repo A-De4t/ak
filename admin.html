@@ -4,642 +4,442 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系统超级管理后台</title>
+    <!-- 引入图标库 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
     <style>
-        /* 全局样式重置 */
+        /* 全局样式：统一字体、颜色、间距 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Microsoft Yahei", sans-serif;
+            font-family: "Microsoft Yahei", "PingFang SC", sans-serif;
+            color: #333;
         }
-
         body {
             background-color: #f5f7fa;
-            color: #303133;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* 头部样式 */
+        /* 头部样式：简洁、功能集中 */
         .header {
-            background-color: #2f80ed;
-            color: white;
-            padding: 1rem 2rem;
+            background-color: #ffffff;
+            height: 60px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             position: sticky;
             top: 0;
             z-index: 100;
         }
-
-        .header h1 {
-            font-size: 1.5rem;
-            font-weight: 500;
-        }
-
-        .logout-btn {
-            padding: 0.5rem 1.2rem;
-            background-color: white;
-            color: #2f80ed;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-
-        .logout-btn:hover {
-            background-color: #ecf5ff;
-        }
-
-        /* 主体容器 */
-        .main-container {
-            display: flex;
-            min-height: calc(100vh - 60px);
-        }
-
-        /* 左侧导航栏 */
-        .sidebar {
-            width: 220px;
-            background-color: white;
-            border-right: 1px solid #e4e7ed;
-            padding: 1.5rem 0;
-        }
-
-        .menu-item {
-            padding: 0.8rem 1.5rem;
-            cursor: pointer;
+        .header-left {
             display: flex;
             align-items: center;
-            color: #606266;
-            font-size: 0.95rem;
-            transition: all 0.2s;
+            gap: 10px;
+        }
+        .logo {
+            width: 32px;
+            height: 32px;
+            background-color: #409EFF;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        .logo-text {
+            font-size: 18px;
+            font-weight: 500;
+            color: #409EFF;
+        }
+        .header-middle {
+            flex: 1;
+            max-width: 400px;
+            margin: 0 20px;
+        }
+        .search-input {
+            width: 100%;
+            height: 36px;
+            border: 1px solid #e6e6e6;
+            border-radius: 18px;
+            padding: 0 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .search-input:focus {
+            border-color: #409EFF;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .header-icon {
+            font-size: 18px;
+            color: #999;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .header-icon:hover {
+            color: #409EFF;
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #409EFF;
+            cursor: pointer;
         }
 
+        /* 主体容器：侧边栏+内容区 */
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
+
+        /* 侧边栏：简洁、层级清晰 */
+        .sidebar {
+            width: 200px;
+            background-color: #ffffff;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+            padding-top: 20px;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
         .menu-item:hover {
             background-color: #f5f7fa;
         }
-
         .menu-item.active {
-            background-color: #ecf5ff;
-            color: #2f80ed;
-            border-left: 3px solid #2f80ed;
+            background-color: #f0f7ff;
+            border-left-color: #409EFF;
+            color: #409EFF;
+        }
+        .menu-icon {
+            font-size: 16px;
         }
 
-        .menu-item i {
-            margin-right: 0.8rem;
-            font-size: 1rem;
-        }
-
-        /* 右侧内容区域 */
+        /* 内容区：留白充足、卡片化布局 */
         .content {
             flex: 1;
-            padding: 1.5rem;
+            padding: 20px;
             overflow-y: auto;
         }
-
-        /* 卡片样式 */
-        .card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .card-title {
-            font-size: 1.1rem;
+        .content-title {
+            font-size: 18px;
             font-weight: 500;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #ebeef5;
+            margin-bottom: 20px;
+            color: #333;
         }
-
-        /* 表单样式 */
-        .form-group {
-            margin-bottom: 1rem;
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 20px;
         }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #606266;
-            font-size: 0.9rem;
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
         }
-
-        .form-control {
-            width: 100%;
-            padding: 0.6rem 0.8rem;
-            border: 1px solid #dcdfe6;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            transition: border-color 0.2s;
+        .card-title {
+            font-size: 16px;
+            font-weight: 500;
         }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #2f80ed;
-            box-shadow: 0 0 0 2px rgba(47, 128, 237, 0.1);
-        }
-
-        /* 按钮样式 */
-        .btn {
-            padding: 0.6rem 1.2rem;
+        .card-action {
+            height: 32px;
+            padding: 0 12px;
+            background-color: #409EFF;
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+            transition: background-color 0.2s;
+        }
+        .card-action:hover {
+            background-color: #3393FF;
         }
 
-        .btn-primary {
-            background-color: #2f80ed;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #4096ff;
-        }
-
-        .btn-success {
-            background-color: #67c23a;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #7ccc4d;
-        }
-
-        .btn-warning {
-            background-color: #e6a23c;
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background-color: #f0b050;
-        }
-
-        .btn-danger {
-            background-color: #f56c6c;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #f78989;
-        }
-
-        /* 表格样式 */
-        .table {
+        /* 表格：整洁、易读 */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 14px;
         }
-
-        .table th, .table td {
-            padding: 0.8rem;
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid #ebeef5;
+            border-bottom: 1px solid #f0f2f5;
         }
-
-        .table th {
-            background-color: #f8f9fa;
-            color: #606266;
+        .data-table th {
+            background-color: #f5f7fa;
             font-weight: 500;
+            color: #666;
+        }
+        .data-table tr:hover {
+            background-color: #f9fafc;
+        }
+        .status-tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: white;
+        }
+        .status-active {
+            background-color: #67C23A;
+        }
+        .status-disabled {
+            background-color: #E6A23C;
+        }
+        .table-action {
+            display: flex;
+            gap: 8px;
+        }
+        .action-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .action-btn:hover {
+            opacity: 0.8;
+        }
+        .btn-disable {
+            background-color: #E6A23C;
+            color: white;
+        }
+        .btn-delete {
+            background-color: #F56C6C;
+            color: white;
         }
 
-        .table tr:hover {
-            background-color: #fafafa;
-        }
-
-        /* 统计卡片样式 */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .stat-card {
-            background-color: white;
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #2f80ed;
-            margin: 0.5rem 0;
-        }
-
-        .stat-label {
-            color: #909399;
-            font-size: 0.85rem;
-        }
-
-        /* 权限列表样式 */
-        .permission-list {
-            list-style: none;
-            margin: 1rem 0;
-        }
-
-        .permission-list li {
-            margin-bottom: 0.8rem;
+        /* 分页：简洁对齐 */
+        .pagination {
             display: flex;
             align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 20px;
+            font-size: 14px;
         }
-
-        .permission-list input[type="checkbox"] {
-            margin-right: 0.5rem;
-            width: 16px;
-            height: 16px;
+        .page-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #e6e6e6;
+            border-radius: 4px;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-
-        /* 响应式适配 */
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-            }
-            .sidebar {
-                width: 100%;
-                border-right: none;
-                border-bottom: 1px solid #e4e7ed;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
+        .page-btn:hover {
+            border-color: #409EFF;
+            color: #409EFF;
+        }
+        .page-btn.active {
+            background-color: #409EFF;
+            color: white;
+            border-color: #409EFF;
         }
     </style>
-    <!-- 引入图标 -->
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- 头部 -->
     <div class="header">
-        <h1>系统超级管理后台</h1>
-        <button class="logout-btn" onclick="logout()">退出登录</button>
+        <div class="header-left">
+            <div class="logo">
+                <<i class="fa fa-diamond"></</i>
+            </div>
+            <div class="logo-text">管理后台</div>
+        </div>
+        <div class="header-middle">
+            <input type="text" class="search-input" placeholder="搜索功能/数据...">
+        </div>
+        <div class="header-right">
+            <<i class="fa fa-refresh header-icon"></</i>
+            <<i class="fa fa-bell header-icon"></</i>
+            <div class="user-avatar">
+                <<i class="fa fa-user"></</i>
+            </div>
+        </div>
     </div>
 
     <!-- 主体容器 -->
     <div class="main-container">
-        <!-- 左侧导航 -->
+        <!-- 侧边栏 -->
         <div class="sidebar">
-            <div class="menu-item active" data-target="proxyAccount">
-                <<i class="fas fa-user-plus"></</i>
-                <span>代理账号管理</span>
+            <div class="menu-item">
+                <<i class="fa fa-home menu-icon"></</i>
+                <span>仪表盘</span>
             </div>
-            <div class="menu-item" data-target="systemConfig">
-                <<i class="fas fa-cog"></</i>
-                <span>系统配置管理</span>
+            <div class="menu-item active">
+                <<i class="fa fa-users menu-icon"></</i>
+                <span>用户管理</span>
             </div>
-            <div class="menu-item" data-target="dataView">
-                <<i class="fas fa-chart-bar"></</i>
-                <span>数据统计分析</span>
+            <div class="menu-item">
+                <<i class="fa fa-list-alt menu-icon"></</i>
+                <span>订单统计</span>
             </div>
-            <div class="menu-item" data-target="operationLog">
-                <<i class="fas fa-history"></</i>
-                <span>操作日志查看</span>
+            <div class="menu-item">
+                <<i class="fa fa-cog menu-icon"></</i>
+                <span>系统设置</span>
             </div>
-            <div class="menu-item" data-target="permission">
-                <<i class="fas fa-lock"></</i>
-                <span>系统权限分配</span>
+            <div class="menu-item">
+                <<i class="fa fa-history menu-icon"></</i>
+                <span>操作日志</span>
             </div>
         </div>
 
-        <!-- 右侧内容 -->
-        <div class="content" id="contentArea">
-            <!-- 内容会通过JS动态加载 -->
+        <!-- 内容区 -->
+        <div class="content">
+            <div class="content-title">用户管理</div>
+            
+            <!-- 用户数据列表卡片 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">用户数据列表</div>
+                    <button class="card-action">
+                        <<i class="fa fa-plus"></</i> 新增用户
+                    </button>
+                </div>
+                
+                <!-- 表格 -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <<th>ID</</th>
+                            <<th>用户名</</th>
+                            <<th>密码</</th>
+                            <<th>账号类型</</th>
+                            <<th>创建时间</</th>
+                            <<th>状态</</th>
+                            <<th>操作</</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>ak</td>
+                            <td>2026</td>
+                            <td>超级管理员</td>
+                            <td>2026-02-02</td>
+                            <td><span class="status-tag status-active">活跃</span></td>
+                            <td>
+                                <div class="table-action">
+                                    <span class="action-btn" style="background:#999;cursor:default;">不可操作</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>az</td>
+                            <td>123456</td>
+                            <td>代理账号</td>
+                            <td>2026-02-02</td>
+                            <td><span class="status-tag status-active">活跃</span></td>
+                            <td>
+                                <div class="table-action">
+                                    <button class="action-btn btn-disable">禁用</button>
+                                    <button class="action-btn btn-delete">删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>as</td>
+                            <td>123456</td>
+                            <td>代理账号</td>
+                            <td>2026-02-02</td>
+                            <td><span class="status-tag status-active">活跃</span></td>
+                            <td>
+                                <div class="table-action">
+                                    <button class="action-btn btn-disable">禁用</button>
+                                    <button class="action-btn btn-delete">删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>testproxy</td>
+                            <td>123456</td>
+                            <td>代理账号</td>
+                            <td>2026-02-02</td>
+                            <td><span class="status-tag status-disabled">禁用</span></td>
+                            <td>
+                                <div class="table-action">
+                                    <button class="action-btn" style="background:#67C23A;color:white;">启用</button>
+                                    <button class="action-btn btn-delete">删除</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <!-- 分页 -->
+                <div class="pagination">
+                    <button class="page-btn"><<i class="fa fa-angle-left"></</i></button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn"><<i class="fa fa-angle-right"></</i></button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        // ========== 全局变量 ==========
-        let systemUsers = [];
-        let loginUser = {};
-
-        // ========== 优先初始化数据和验证登录状态 ==========
-        (function() {
-            // 1. 先读取用户数据（确保数据存在）
-            initUsers();
-            
-            // 2. 再验证登录状态
-            loginUser = JSON.parse(localStorage.getItem('loginUser') || '{}');
-            if (!loginUser.username || loginUser.role !== 'superAdmin' || loginUser.status !== 'active') {
-                // 强制跳回登录页（确保路径正确）
-                const baseUrl = window.location.href.replace('admin.html', '');
-                window.location.href = baseUrl + 'index.html';
-                return;
-            }
-
-            // 3. 数据和状态都正常，初始化页面
-            document.addEventListener('DOMContentLoaded', function() {
-                loadPage('proxyAccount');
-                bindMenuEvents();
+        // 侧边栏菜单切换
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                this.classList.add('active');
             });
-        })();
+        });
 
-        // ========== 数据初始化函数 ==========
-        function initUsers() {
-            // 从本地存储读取数据
-            const storedUsers = localStorage.getItem('systemUsers');
-            if (storedUsers) {
-                systemUsers = JSON.parse(storedUsers);
-            } else {
-                // 初始化默认数据（确保ak管理员存在）
-                systemUsers = [
-                    { id: 1, username: 'ak', password: '2026', role: 'superAdmin', status: 'active', createTime: '2026-02-02' },
-                    { id: 2, username: 'testproxy', password: '123456', role: 'proxy', status: 'active', createTime: '2026-02-02' }
-                ];
-                localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-            }
-        }
-
-        // ========== 页面导航和加载 ==========
-        function bindMenuEvents() {
-            // 绑定导航菜单点击事件
-            document.querySelectorAll('.menu-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-                    loadPage(this.getAttribute('data-target'));
-                });
-            });
-        }
-
-        function loadPage(pageName) {
-            const contentArea = document.getElementById('contentArea');
-            let pageHTML = '';
-
-            switch(pageName) {
-                // 1. 代理账号管理（新增账号）
-                case 'proxyAccount':
-                    pageHTML = `
-                        <div class="card">
-                            <div class="card-title">添加新代理账号</div>
-                            <form id="addUserForm">
-                                <div class="form-group">
-                                    <label for="newUsername">用户名</label>
-                                    <input type="text" id="newUsername" class="form-control" placeholder="请输入用户名" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="newPassword">密码</label>
-                                    <input type="password" id="newPassword" class="form-control" placeholder="请输入密码" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="newRole">账号类型</label>
-                                    <select id="newRole" class="form-control">
-                                        <option value="proxy">代理账号</option>
-                                        <option value="superAdmin">超级管理员</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-primary">保存账号</button>
-                            </form>
-                        </div>
-                    `;
-                    break;
-
-                // 2. 系统配置管理（账号列表+操作）
-                case 'systemConfig':
-                    pageHTML = `
-                        <div class="card">
-                            <div class="card-title">账号列表管理</div>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <<th>ID</</th>
-                                        <<th>用户名</</th>
-                                        <<th>密码</</th>
-                                        <<th>账号类型</</th>
-                                        <<th>创建时间</</th>
-                                        <<th>状态</</th>
-                                        <<th>操作</</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${systemUsers.map(user => `
-                                        <tr>
-                                            <td>${user.id}</td>
-                                            <td>${user.username}</td>
-                                            <td>${user.password}</td>
-                                            <td>${user.role === 'superAdmin' ? '超级管理员' : '代理账号'}</td>
-                                            <td>${user.createTime}</td>
-                                            <td>${user.status === 'active' ? 
-                                                '<span style="color: #67c23a;">✅ 活跃</span>' : 
-                                                '<span style="color: #f56c6c;">❌ 禁用</span>'}</td>
-                                            <td>
-                                                ${user.role === 'superAdmin' ? 
-                                                    '<span style="color: #999;">不可操作</span>' : 
-                                                    `
-                                                        ${user.status === 'active' ? 
-                                                            `<button class="btn btn-warning" onclick="toggleStatus(${user.id})">禁用</button>` : 
-                                                            `<button class="btn btn-success" onclick="toggleStatus(${user.id})">启用</button>`
-                                                        }
-                                                        <button class="btn btn-danger" onclick="deleteUser(${user.id})">删除</button>
-                                                    `
-                                                }
-                                            </td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                    break;
-
-                // 3. 数据统计分析
-                case 'dataView':
-                    const totalUsers = systemUsers.length;
-                    const activeUsers = systemUsers.filter(u => u.status === 'active').length;
-                    const proxyUsers = systemUsers.filter(u => u.role === 'proxy').length;
-                    const adminUsers = systemUsers.filter(u => u.role === 'superAdmin').length;
-                    
-                    pageHTML = `
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-label">总账号数</div>
-                                <div class="stat-value">${totalUsers}</div>
-                                <div class="stat-label">个</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">活跃账号</div>
-                                <div class="stat-value">${activeUsers}</div>
-                                <div class="stat-label">个</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">代理账号</div>
-                                <div class="stat-value">${proxyUsers}</div>
-                                <div class="stat-label">个</div>
-                            </div>
-                            <div class="stat-card">
-                                <div class="stat-label">管理员账号</div>
-                                <div class="stat-value">${adminUsers}</div>
-                                <div class="stat-label">个</div>
-                            </div>
-                        </div>
-                        <div class="card">
-                            <div class="card-title">账号状态分布</div>
-                            <div style="padding: 1rem;">
-                                <p>活跃账号占比：${totalUsers > 0 ? Math.round((activeUsers/totalUsers)*100) : 0}%</p>
-                                <p>代理账号占比：${totalUsers > 0 ? Math.round((proxyUsers/totalUsers)*100) : 0}%</p>
-                            </div>
-                        </div>
-                    `;
-                    break;
-
-                // 4. 操作日志查看
-                case 'operationLog':
-                    const logs = [
-                        { id: 1, operator: 'ak', action: '添加代理账号', target: 'testproxy', time: '2026-02-02 10:00' },
-                        { id: 2, operator: 'ak', action: '登录系统', target: '管理后台', time: '2026-02-02 10:05' },
-                        { id: 3, operator: 'testproxy', action: '登录代理后台', target: '代理数据页', time: '2026-02-02 10:10' }
-                    ];
-                    
-                    pageHTML = `
-                        <div class="card">
-                            <div class="card-title">系统操作日志</div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                <span>共 ${logs.length} 条日志记录</span>
-                                <button class="btn btn-primary" onclick="exportLogs()">导出日志</button>
-                            </div>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <<th>日志ID</</th>
-                                        <<th>操作人</</th>
-                                        <<th>操作类型</</th>
-                                        <<th>操作目标</</th>
-                                        <<th>操作时间</</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${logs.map(log => `
-                                        <tr>
-                                            <td>${log.id}</td>
-                                            <td>${log.operator}</td>
-                                            <td>${log.action}</td>
-                                            <td>${log.target}</td>
-                                            <td>${log.time}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
-                    break;
-
-                // 5. 系统权限分配
-                case 'permission':
-                    pageHTML = `
-                        <div class="card">
-                            <div class="card-title">代理账号权限分配</div>
-                            <div class="form-group">
-                                <label for="permissionUser">选择代理账号</label>
-                                <select id="permissionUser" class="form-control">
-                                    ${systemUsers.filter(u => u.role === 'proxy').map(user => 
-                                        `<option value="${user.id}">${user.username} (${user.status === 'active' ? '活跃' : '禁用'})</option>`
-                                    ).join('')}
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>可操作权限</label>
-                                <ul class="permission-list">
-                                    <li><input type="checkbox" id="perm1" checked> <label for="perm1">查看代理数据</label></li>
-                                    <li><input type="checkbox" id="perm2" checked> <label for="perm2">导出个人数据</label></li>
-                                    <li><input type="checkbox" id="perm3"> <label for="perm3">修改个人密码</label></li>
-                                    <li><input type="checkbox" id="perm4"> <label for="perm4">查看操作日志</label></li>
-                                </ul>
-                            </div>
-                            <button class="btn btn-primary" onclick="savePermission()">保存权限设置</button>
-                        </div>
-                    `;
-                    break;
-
-                default:
-                    pageHTML = '<div class="card"><p>页面不存在</p></div>';
-            }
-
-            contentArea.innerHTML = pageHTML;
-            bindFormEvents(pageName);
-        }
-
-        // ========== 事件绑定 ==========
-        function bindFormEvents(pageName) {
-            if (pageName === 'proxyAccount') {
-                const addForm = document.getElementById('addUserForm');
-                if (addForm) {
-                    addForm.addEventListener('submit', function(e) {
-                        e.preventDefault();
-                        const username = document.getElementById('newUsername').value.trim();
-                        const password = document.getElementById('newPassword').value.trim();
-                        const role = document.getElementById('newRole').value;
-
-                        // 验证用户名是否重复
-                        const isDuplicate = systemUsers.some(u => u.username === username);
-                        if (isDuplicate) {
-                            alert('用户名已存在，请更换！');
-                            return;
-                        }
-
-                        // 创建新账号
-                        const newUser = {
-                            id: Date.now(),
-                            username: username,
-                            password: password,
-                            role: role,
-                            status: 'active',
-                            createTime: new Date().toLocaleDateString()
-                        };
-
-                        // 保存新账号
-                        systemUsers.push(newUser);
-                        localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-                        
-                        alert(`账号 ${username} 创建成功！`);
-                        addForm.reset();
-                        loadPage('systemConfig');
-                    });
+        // 模拟操作按钮功能
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.textContent === '禁用') {
+                    this.textContent = '启用';
+                    this.style.background = '#67C23A';
+                    this.closest('tr').querySelector('.status-tag').className = 'status-tag status-disabled';
+                    this.closest('tr').querySelector('.status-tag').textContent = '禁用';
+                } else if (this.textContent === '启用') {
+                    this.textContent = '禁用';
+                    this.style.background = '#E6A23C';
+                    this.closest('tr').querySelector('.status-tag').className = 'status-tag status-active';
+                    this.closest('tr').querySelector('.status-tag').textContent = '活跃';
+                } else if (this.textContent === '删除') {
+                    if (confirm('确定要删除该用户吗？')) {
+                        this.closest('tr').remove();
+                    }
                 }
-            }
-        }
-
-        // ========== 核心功能函数 ==========
-        function toggleStatus(userId) {
-            const user = systemUsers.find(u => u.id === userId);
-            if (user) {
-                user.status = user.status === 'active' ? 'disabled' : 'active';
-                localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-                loadPage('systemConfig');
-                alert(`账号 ${user.username} 已${user.status === 'active' ? '启用' : '禁用'}！`);
-            }
-        }
-
-        function deleteUser(userId) {
-            if (confirm('确定要删除该账号吗？删除后不可恢复！')) {
-                systemUsers = systemUsers.filter(u => u.id !== userId);
-                localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
-                loadPage('systemConfig');
-                alert('账号删除成功！');
-            }
-        }
-
-        function exportLogs() {
-            alert('日志已导出为Excel文件！（模拟功能）');
-        }
-
-        function savePermission() {
-            const userId = document.getElementById('permissionUser').value;
-            alert(`已为账号ID ${userId} 保存权限设置！`);
-        }
-
-        function logout() {
-            if (confirm('确定要退出登录吗？')) {
-                localStorage.removeItem('loginUser');
-                const baseUrl = window.location.href.replace('admin.html', '');
-                window.location.href = baseUrl + 'index.html';
-            }
-        }
+            });
+        });
     </script>
 </body>
 </html>
