@@ -3,31 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系统登录</title>
+    <title>系统超级管理员登录</title>
     <link rel="stylesheet" href="common.css">
 </head>
 <body>
     <div class="login-box">
-        <h2>管理员/代理登录</h2>
+        <!-- 标题改为超级管理员，明确唯一权限 -->
+        <h2>系统超级管理员登录</h2>
         <div class="input-group">
-            <label for="username">账号</label>
-            <input type="text" id="username" value="ak" placeholder="请输入账号">
+            <label for="username">管理员账号</label>
+            <input type="text" id="username" value="ak" placeholder="仅系统搭建者可登录">
         </div>
         <div class="input-group">
-            <label for="password">密码</label>
-            <input type="password" id="password" value="2026" placeholder="请输入密码">
+            <label for="password">管理员密码</label>
+            <input type="password" id="password" value="2026" placeholder="请输入超级管理员密码">
         </div>
         <button class="btn btn-primary" style="width:100%" onclick="handleLogin()">立即登录</button>
     </div>
 
     <script src="common.js"></script>
     <script>
+        // 核心登录函数：仅ak/2026可登录，唯一跳管理后台
         async function handleLogin() {
             const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value.trim();
 
+            // 前端空值校验
             if (!username || !password) {
-                alert("账号或密码不能为空！");
+                alert("账号和密码不能为空！");
                 return;
             }
 
@@ -35,22 +38,19 @@
                 const response = await fetch(`${API_BASE}/login`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
-                    credentials: 'include',
+                    credentials: 'include', // 携带cookie，保存登录态
                     body: JSON.stringify({username, password})
                 });
                 const data = await response.json();
                 alert(data.message);
+                // 仅登录成功时，跳转到管理后台（唯一后台入口）
                 if (data.success) {
-                    // 登录成功后，根据账号类型跳转到对应页面
-                    if (username === "admin") {
-                        window.location.href = "admin.html";
-                    } else {
-                        window.location.href = "proxy.html";
-                    }
-                }
+    sessionStorage.setItem('login_time', new Date().getTime()); // 新增：记录登录时间
+    window.location.href = "admin.html";
+}
             } catch (error) {
                 console.error("登录请求失败:", error);
-                alert("网络错误，请检查后端是否启动");
+                alert("网络错误，请检查后端是否启动！");
             }
         }
     </script>
