@@ -1,4 +1,4 @@
-/* 新增：登录页样式 */
+/* 登录页样式 */
 .login-container {
     display: flex;
     justify-content: center;
@@ -27,7 +27,6 @@
     font-size: 1rem;
 }
 
-/* 原有样式保持不变 */
 /* 全局样式重置 */
 * {
     margin: 0;
@@ -227,4 +226,33 @@
 .stat-label {
     color: #909399;
     font-size: 0.9rem;
+}
+
+/* 新增：操作按钮样式 */
+.btn-operation {
+    padding: 0.2rem 0.6rem;
+    margin: 0 0.2rem;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.btn-delete {
+    background-color: #f56c6c;
+    color: white;
+}
+
+.btn-enable {
+    background-color: #67c23a;
+    color: white;
+}
+
+.btn-disable {
+    background-color: #e6a23c;
+    color: white;
+}
+
+.btn-operation:hover {
+    opacity: 0.8;
 }
