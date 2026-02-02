@@ -11,56 +11,47 @@
         <h2>系统登录</h2>
         <div class="input-box">
             <label for="username">账号</label>
-            <input type="text" id="username" placeholder="请输入管理员/代理账号" value="ak" autocomplete="off">
+            <input type="text" id="username" placeholder="请输入管理员/代理账号" autocomplete="off">
         </div>
         <div class="input-box">
             <label for="password">密码</label>
-            <input type="password" id="password" placeholder="请输入密码" value="2026" autocomplete="off">
+            <input type="password" id="password" placeholder="请输入密码" autocomplete="off">
         </div>
         <button class="login-btn" onclick="handleLogin()">立即登录</button>
     </div>
 
+    <script src="config.js"></script>
     <script src="common.js"></script>
     <script>
         // 登录核心函数
         async function handleLogin() {
             const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value.trim();
-            // 前端空值校验
+
+            // 空值校验
             if (!username || !password) {
                 alert("账号和密码不能为空！");
                 return;
             }
 
-            try {
-                // 发送登录请求
-                const res = await fetch(`${API_BASE}/login`, {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({username, password})
-                });
-                const data = await res.json();
-                alert(data.message);
-                // 登录成功 → 根据角色跳转专属页面
-                if (data.success) {
-                    // 记录登录时间，用于自动退出
-                    sessionStorage.setItem("loginTime", new Date().getTime());
-                    // 超级管理员→管理后台；代理→代理操作页（GitHub地址，本地可改）
-                    const targetUrl = data.role === "admin" 
-                        ? "https://a-de4t.github.io/ak/admin.html" 
-                        : "https://a-de4t.github.io/ak/proxy.html";
-                    window.location.href = targetUrl;
-                }
-            } catch (err) {
-                console.error("登录请求失败：", err);
-                alert("登录失败！请检查：\n1. 后端服务是否启动\n2. API_BASE是否为正确的公网IP");
+            // 校验账号密码（从config.js的用户列表获取）
+            const user = USER_LIST.find(item => item.username === username && item.password === password);
+            if (!user) {
+                alert("账号或密码错误！");
+                return;
             }
+
+            // 登录成功：保存用户信息到本地（替代后端session）
+            localStorage.setItem("loginUser", JSON.stringify(user));
+            alert(`${user.role === "admin" ? "超级管理员" : "代理"}登录成功！`);
+            
+            // 根据角色跳转专属页面（纯GitHub Pages路径）
+            window.location.href = user.role === "admin" ? "admin.html" : "proxy.html";
         }
 
         // 回车触发登录
         document.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") handleLogin();
+            e.key === "Enter" && handleLogin();
         });
     </script>
 </body>
