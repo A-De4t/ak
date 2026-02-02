@@ -27,38 +27,41 @@
     </div>
 
     <script>
-        // 初始化默认用户（强制写入localStorage，管理员改为 ak/2026）
-        if (!localStorage.getItem('users')) {
-            localStorage.setItem('users', JSON.stringify([{
-                username: 'ak', password: '2026', role: 'superAdmin'
-            }, {
-                username: 'testproxy', password: '123456', role: 'proxy'
-            }]));
-        }
+        // 强制重置：删除旧的用户数据，重新写入新账号（关键修复）
+        localStorage.removeItem('users'); // 先删除旧数据
+        localStorage.removeItem('loginUser'); // 清空旧登录状态
+        
+        // 重新初始化用户数据（确保是最新的 ak/2026）
+        const defaultUsers = [
+            { username: 'ak', password: '2026', role: 'superAdmin' },
+            { username: 'testproxy', password: '123456', role: 'proxy' }
+        ];
+        localStorage.setItem('users', JSON.stringify(defaultUsers));
 
-        // 核心登录函数（极简版）
+        // 核心登录函数
         function login() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
+            // 重新读取最新的用户数据
             const users = JSON.parse(localStorage.getItem('users') || '[]');
             
-            // 验证账号密码
-            const user = users.find(u => u.username === username && u.password === password);
+            // 验证账号密码（严格匹配）
+            const user = users.find(u => 
+                u.username === username && 
+                u.password === password
+            );
+            
             if (!user) {
                 alert('账号或密码错误！');
                 return;
             }
 
-            // 存储登录状态
+            // 存储登录状态并跳转
             localStorage.setItem('loginUser', JSON.stringify(user));
-            
-            // 强制跳转（适配GitHub Pages路径：直接拼接完整URL）
             const baseUrl = window.location.href.replace('index.html', '');
-            if (user.role === 'superAdmin') {
-                window.location.href = baseUrl + 'admin.html';
-            } else {
-                window.location.href = baseUrl + 'proxy.html';
-            }
+            window.location.href = user.role === 'superAdmin' 
+                ? baseUrl + 'admin.html' 
+                : baseUrl + 'proxy.html';
         }
     </script>
 </body>
