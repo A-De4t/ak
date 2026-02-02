@@ -17,22 +17,22 @@
         <h2 style="text-align:center; color:#2f80ed; margin-bottom:1.5rem;">系统登录</h2>
         <div class="form-group">
             <label>用户名：</label>
-            <input type="text" id="username" placeholder="ak" value="ak">
+            <input type="text" id="username" placeholder="请输入用户名" value="ak">
         </div>
         <div class="form-group">
             <label>密码：</label>
-            <input type="password" id="password" placeholder="2026" value="2026">
+            <input type="password" id="password" placeholder="请输入密码" value="2026">
         </div>
         <button onclick="login()">登录</button>
     </div>
 
     <script>
-        // 初始化默认用户（强制写入localStorage）
+        // 初始化默认用户（强制写入localStorage，管理员改为 ak/2026）
         if (!localStorage.getItem('users')) {
             localStorage.setItem('users', JSON.stringify([{
-                username: 'ak', password: '123456', role: 'superAdmin'
+                username: 'ak', password: '2026', role: 'superAdmin'
             }, {
-                username: 'testproxy', password: '2026', role: 'proxy'
+                username: 'testproxy', password: '123456', role: 'proxy'
             }]));
         }
 
