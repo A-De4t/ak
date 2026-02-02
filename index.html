@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>系统超级管理后台</title>
+    <title>系统登录</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="header">
-        <h1>系统超级管理后台</h1>
-        <div class="header-right">
-            <span>欢迎您，(超级管理员)</span>
-            <button id="logoutBtn" class="btn">退出登录</button>
-        </div>
-    </div>
-
-    <div class="main-container">
-        <!-- 左侧导航 -->
-        <div class="sidebar">
-            <h3>管理员专属功能</h3>
-            <div class="menu-item active" data-target="proxyAccount">代理账号管理</div>
-            <div class="menu-item" data-target="systemConfig">系统全局配置管理</div>
-            <div class="menu-item" data-target="dataView">所有代理数据查看/统计</div>
-            <div class="menu-item" data-target="operationLog">操作日志查看与导出</div>
-            <div class="menu-item" data-target="permission">系统权限分配</div>
-        </div>
-
-        <!-- 右侧内容 -->
-        <div class="content" id="contentArea">
-            <!-- 页面内容会通过 JS 动态加载到这里 -->
+    <div class="login-container">
+        <div class="login-card">
+            <h2>系统登录</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginUsername">用户名：</label>
+                    <input type="text" id="loginUsername" class="form-control" required placeholder="请输入用户名">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">密码：</label>
+                    <input type="password" id="loginPassword" class="form-control" required placeholder="请输入密码">
+                </div>
+                <div class="form-group">
+                    <label for="userRole">用户角色：</label>
+                    <select id="userRole" class="form-control" required>
+                        <option value="">请选择角色</option>
+                        <option value="superAdmin">超级管理员</option>
+                        <option value="proxy">代理</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary login-btn">登录</button>
+            </form>
         </div>
     </div>
 
