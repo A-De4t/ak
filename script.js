@@ -29,7 +29,7 @@ function generateId() {
     return Date.now(); // 用时间戳作为唯一ID
 }
 
-// ========== 登录逻辑（自动判断角色） ==========
+// ========== 登录逻辑（修复 GitHub Pages 跳转问题） ==========
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     if (loginForm) { // 只有登录页才绑定该事件
@@ -63,11 +63,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 登录成功：存储用户信息到本地存储
                 localStorage.setItem('loggedInUser', JSON.stringify(user));
                 
+                // 修复：适配 GitHub Pages 路径跳转
+                const baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
                 // 自动判断角色并跳转
                 if (user.role === 'superAdmin') {
-                    window.location.href = 'admin.html';
+                    window.location.href = baseUrl + 'admin.html';
                 } else if (user.role === 'proxy') {
-                    window.location.href = 'proxy.html';
+                    window.location.href = baseUrl + 'proxy.html';
                 }
             } else {
                 alert('用户名或密码错误！');
@@ -75,24 +77,26 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 超级管理员退出登录
+    // 超级管理员退出登录（修复跳转路径）
     const adminLogoutBtn = document.getElementById('logoutBtn');
     if (adminLogoutBtn) {
         adminLogoutBtn.addEventListener('click', function() {
             if (confirm('确定要退出登录吗？')) {
                 localStorage.removeItem('loggedInUser');
-                window.location.href = 'index.html';
+                const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', '');
+                window.location.href = baseUrl + 'index.html';
             }
         });
     }
 
-    // 代理退出登录
+    // 代理退出登录（修复跳转路径）
     const proxyLogoutBtn = document.getElementById('proxyLogoutBtn');
     if (proxyLogoutBtn) {
         proxyLogoutBtn.addEventListener('click', function() {
             if (confirm('确定要退出登录吗？')) {
                 localStorage.removeItem('loggedInUser');
-                window.location.href = 'index.html';
+                const baseUrl = window.location.origin + window.location.pathname.replace('proxy.html', '');
+                window.location.href = baseUrl + 'index.html';
             }
         });
     }
@@ -311,37 +315,40 @@ function bindAdminPageEvents(pageName) {
     switch(pageName) {
         case 'proxyAccount':
             // 新增用户表单提交
-            document.getElementById('addUserForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value.trim();
-                const role = document.getElementById('role').value;
+            const addForm = document.getElementById('addUserForm');
+            if (addForm) {
+                addForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value.trim();
+                    const role = document.getElementById('role').value;
 
-                // 验证用户名是否已存在
-                const systemUsers = getSystemUsers();
-                const userExists = systemUsers.some(u => u.username === username);
-                if (userExists) {
-                    alert('用户名已存在，请更换！');
-                    return;
-                }
+                    // 验证用户名是否已存在
+                    const systemUsers = getSystemUsers();
+                    const userExists = systemUsers.some(u => u.username === username);
+                    if (userExists) {
+                        alert('用户名已存在，请更换！');
+                        return;
+                    }
 
-                // 创建新用户
-                const newUser = {
-                    id: generateId(),
-                    username: username,
-                    password: password,
-                    role: role,
-                    status: 'active',
-                    createTime: new Date().toLocaleDateString() // 当前日期
-                };
+                    // 创建新用户
+                    const newUser = {
+                        id: generateId(),
+                        username: username,
+                        password: password,
+                        role: role,
+                        status: 'active',
+                        createTime: new Date().toLocaleDateString() // 当前日期
+                    };
 
-                // 添加到用户列表并保存
-                systemUsers.push(newUser);
-                saveSystemUsers(systemUsers);
+                    // 添加到用户列表并保存
+                    systemUsers.push(newUser);
+                    saveSystemUsers(systemUsers);
 
-                alert(`用户 ${username} 已成功添加！角色：${role === 'proxy' ? '代理' : '超级管理员'}`);
-                this.reset(); // 清空表单
-            });
+                    alert(`用户 ${username} 已成功添加！角色：${role === 'proxy' ? '代理' : '超级管理员'}`);
+                    this.reset(); // 清空表单
+                });
+            }
             break;
 
         case 'operationLog':
@@ -394,7 +401,7 @@ window.toggleUserStatus = function(userId, action) {
     }
 };
 
-// ========== 代理后台逻辑（无核心改动） ==========
+// ========== 代理后台逻辑 ==========
 // 初始化代理后台
 function initProxyDashboard() {
     // 默认加载第一个页面
@@ -507,3 +514,15 @@ function loadProxyPage(pageName) {
                             <input type="password" id="newPwd" class="form-control" required placeholder="请输入新密码">
                         </div>
                         <div class="form-group">
+                            <label>确认新密码：</label>
+                            <input type="password" id="confirmPwd" class="form-control" required placeholder="请再次输入新密码">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+            `;
+            break;
+
+        case 'proxyLogs':
+            pageHTML = `
+                <div class="page-title
