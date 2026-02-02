@@ -4,68 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>系统登录</title>
-    <style>
-        /* 简单美化，和原页面风格一致，可自行修改 */
-        * {margin: 0; padding: 0; box-sizing: border-box;}
-        body {background: #f5f5f5; font-family: "Microsoft YaHei";}
-        .login-box {width: 400px; margin: 100px auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
-        .login-box h2 {text-align: center; margin-bottom: 30px; color: #333;}
-        .input-item {margin-bottom: 20px;}
-        .input-item label {display: block; margin-bottom: 8px; color: #666;}
-        .input-item input {width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 16px;}
-        #login-btn {width: 100%; padding: 12px; background: #1890ff; color: #fff; border: none; border-radius: 4px; font-size: 18px; cursor: pointer;}
-        #login-btn:hover {background: #096dd9;}
-    </style>
+    <link rel="stylesheet" href="common.css">
 </head>
 <body>
     <div class="login-box">
-        <h2>系统管理后台登录</h2>
-        <div class="input-item">
+        <h2>管理员/代理登录</h2>
+        <div class="input-group">
             <label for="username">账号</label>
-            <input type="text" id="username" placeholder="请输入管理/代理账号" value="ak">
+            <input type="text" id="username" value="ak" placeholder="请输入账号">
         </div>
-        <div class="input-item">
+        <div class="input-group">
             <label for="password">密码</label>
-            <input type="password" id="password" placeholder="请输入密码" value="2026">
+            <input type="password" id="password" value="2026" placeholder="请输入密码">
         </div>
-        <!-- 绑定denglu函数，点击即触发 -->
-        <button id="login-btn" onclick="denglu()">立即登录</button>
+        <button class="btn btn-primary" style="width:100%" onclick="handleLogin()">立即登录</button>
     </div>
 
+    <script src="common.js"></script>
     <script>
-        // 核心登录函数：请求后端+提示+跳转
-        function denglu() {
-            // 获取输入框的值
+        async function handleLogin() {
             const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value.trim();
-            
-            // 简单前端校验：空值判断
+
             if (!username || !password) {
-                alert("账号和密码不能为空！");
+                alert("账号或密码不能为空！");
                 return;
             }
 
-            // 发送登录请求到后端
-            fetch('http://127.0.0.1:5000/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include', // 关键：携带cookie，保存登录态
-                body: JSON.stringify({username, password})
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message); // 弹出登录结果
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    credentials: 'include',
+                    body: JSON.stringify({username, password})
+                });
+                const data = await response.json();
+                alert(data.message);
                 if (data.success) {
-                    // 登录成功：跳转到管理后台
-                    window.location.href = 'admin.html';
+                    // 登录成功后，根据账号类型跳转到对应页面
+                    if (username === "admin") {
+                        window.location.href = "admin.html";
+                    } else {
+                        window.location.href = "proxy.html";
+                    }
                 }
-            })
-            .catch(error => {
-                console.error('登录请求失败：', error);
-                alert('网络错误！请检查后端是否启动');
-            });
+            } catch (error) {
+                console.error("登录请求失败:", error);
+                alert("网络错误，请检查后端是否启动");
+            }
         }
     </script>
 </body>
