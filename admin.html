@@ -16,56 +16,48 @@
         </div>
     </header>
 
-    <!-- 核心内容区 -->
+    <!-- 管理员专属功能区 -->
     <main class="content-container">
         <div class="function-card">
             <h3>🔧 管理员专属功能</h3>
             <ul>
-                <li>代理账号管理（新增/修改/删除）</li>
-                <li>系统全局设置</li>
+                <li>代理账号管理（新增/修改/删除，修改config.js即可）</li>
+                <li>系统全局配置管理</li>
                 <li>所有代理数据查看/统计</li>
-                <li>操作日志查看</li>
+                <li>操作日志查看与导出</li>
+                <li>系统权限分配</li>
             </ul>
         </div>
         <div class="function-card">
-            <h3>📋 代理账号列表（点击刷新）</h3>
-            <button class="refresh-btn" onclick="getProxyList()">刷新代理列表</button>
+            <h3>📋 当前代理账号列表</h3>
             <div id="proxy-list" class="proxy-list"></div>
         </div>
     </main>
 
+    <script src="config.js"></script>
     <script src="common.js"></script>
     <script>
-        // 页面加载即校验：1.是否登录 2.是否为管理员
-        window.onload = async () => {
-            await checkAdminAuth(); // 管理员专属校验
-            initAutoLogout();       // 初始化无操作自动退出
+        // 页面加载即校验：是否为管理员（非管理员直接踢回登录）
+        window.onload = () => {
+            checkAdminAuth();
+            renderProxyList(); // 渲染代理列表
         };
 
-        // 可选功能：获取所有代理账号（仅管理员可看）
-        async function getProxyList() {
-            try {
-                const res = await fetch(`${API_BASE}/get-proxies`, {
-                    method: "GET",
-                    credentials: "include"
-                });
-                const data = await res.json();
-                if (data.success) {
-                    const proxyList = document.getElementById("proxy-list");
-                    proxyList.innerHTML = "";
-                    for (let [account, info] of Object.entries(data.proxies)) {
-                        proxyList.innerHTML += `<div class="proxy-item">账号：${account} | 密码：${info.password}</div>`;
-                    }
-                    if (Object.keys(data.proxies).length === 0) {
-                        proxyList.innerHTML = "<p>暂无代理账号</p>";
-                    }
-                } else {
-                    alert(data.message);
-                }
-            } catch (err) {
-                console.error("获取代理列表失败：", err);
-                alert("获取失败，请检查后端服务！");
+        // 渲染代理账号列表（管理员专属）
+        function renderProxyList() {
+            const proxyListEl = document.getElementById("proxy-list");
+            // 过滤出所有代理账号
+            const proxies = USER_LIST.filter(item => item.role === "proxy");
+            if (proxies.length === 0) {
+                proxyListEl.innerHTML = "<p class='no-proxy'>暂无代理账号</p>";
+                return;
             }
+            // 循环渲染
+            proxyListEl.innerHTML = proxies.map(item => `
+                <div class="proxy-item">
+                    账号：<span>${item.username}</span> | 密码：<span>${item.password}</span>
+                </div>
+            `).join("");
         }
     </script>
 </body>
