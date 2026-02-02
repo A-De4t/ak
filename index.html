@@ -4,75 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员-代理系统登录</title>
-    <!-- 全局样式（原common.css内容，整合进来，无需单独引用css文件） -->
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-        }
-        body {
-            background-color: #f5f7fa;
-            color: #333;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-container {
-            width: 100%;
-            max-width: 420px;
-            padding: 40px 30px;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.06);
-        }
-        .login-container h2 {
-            text-align: center;
-            margin-bottom: 35px;
-            color: #1890ff;
-            font-weight: 600;
-            font-size: 24px;
-        }
-        .input-box {
-            margin-bottom: 25px;
-        }
-        .input-box label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
-            color: #666666;
-        }
-        .input-box input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #e6e6e6;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        .input-box input:focus {
-            outline: none;
-            border-color: #1890ff;
-            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
-        }
-        .login-btn {
-            width: 100%;
-            padding: 12px 0;
-            background-color: #1890ff;
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .login-btn:hover {
-            background-color: #096dd9;
-        }
-    </style>
+    <link rel="stylesheet" href="common.css">
 </head>
 <body>
     <div class="login-container">
@@ -88,44 +20,33 @@
         <button class="login-btn" onclick="handleLogin()">立即登录</button>
     </div>
 
-    <!-- 核心配置（原config.js内容，整合进来） -->
+    <script src="config.js"></script>
     <script>
-        // 账号配置：可直接在这里修改/新增/删除账号
-        const USER_LIST = [
-            { username: "ak", password: "2026", role: "admin" },
-            { username: "proxy001", password: "proxy001@2026", role: "proxy" },
-            { username: "proxy002", password: "proxy002@2026", role: "proxy" }
-        ];
-        // 页面路径配置
-        const PAGE_PATH = {
-            admin: "admin.html",
-            proxy: "proxy.html"
-        };
-
         // 登录核心函数
         function handleLogin() {
             const username = document.getElementById("username").value.trim();
             const password = document.getElementById("password").value.trim();
 
+            // 空值校验
             if (!username || !password) {
                 alert("账号和密码不能为空！");
                 return;
             }
 
-            // 校验账号密码
+            // 校验账号密码（从config.js获取）
             const user = USER_LIST.find(item => item.username === username && item.password === password);
             if (!user) {
                 alert("账号或密码错误！");
                 return;
             }
 
-            // 保存登录态，跳转对应页面
+            // 保存登录态并跳转对应后台
             localStorage.setItem("loginUser", JSON.stringify(user));
             alert(`${user.role === "admin" ? "超级管理员" : "代理"}登录成功！`);
-            window.location.href = user.role === "admin" ? PAGE_PATH.admin : PAGE_PATH.proxy;
+            window.location.href = user.role === "admin" ? "admin.html" : "proxy.html";
         }
 
-        // 回车触发登录
+        // 回车快捷键登录
         document.addEventListener("keydown", (e) => {
             e.key === "Enter" && handleLogin();
         });
