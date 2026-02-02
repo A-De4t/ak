@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="common.css">
 </head>
 <body>
-    <!-- 顶部导航：用户名+退出按钮 -->
     <header class="proxy-header">
         <h1>代理操作后台</h1>
         <div class="user-info">
@@ -16,7 +15,6 @@
         </div>
     </header>
 
-    <!-- 代理专属功能区 -->
     <main class="content-container">
         <div class="function-card">
             <h3>📱 代理专属操作功能</h3>
@@ -37,7 +35,7 @@
     <script src="config.js"></script>
     <script src="common.js"></script>
     <script>
-        // 页面加载即校验：是否登录（非登录直接踢回登录）
+        // 页面加载校验是否登录
         window.onload = () => {
             checkLoginAuth();
         };
