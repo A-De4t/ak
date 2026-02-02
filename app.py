@@ -58,7 +58,7 @@ def login():
         session['role'] = USER_LIST[username]['role']
         return jsonify({
             "success": True,
-            "message": f"{USER_LIST[username]['role']=='admin'?'超级管理员':'代理'}登录成功！"，
+           "message": f"{USER_LIST[username]['role']=='admin'?'超级管理员':'代理'}登录成功！",
             "username": username,
             "role": USER_LIST[username]['role']
         })
