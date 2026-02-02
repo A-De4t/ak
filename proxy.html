@@ -2,33 +2,271 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>代理后台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代理操作后台</title>
     <style>
-        body { margin: 0; padding: 2rem; background: #f5f7fa; }
-        .header { background: #2f80ed; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        button { padding: 0.5rem 1rem; cursor: pointer; border: none; border-radius: 4px; }
-        .content { margin-top: 2rem; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #303133;
+        }
+
+        .header {
+            background-color: #2f80ed;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1.2rem;
+            background-color: white;
+            color: #2f80ed;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #ecf5ff;
+        }
+
+        .main-container {
+            padding: 1.5rem;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #ebeef5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2f80ed;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: #909399;
+            font-size: 0.85rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .table th, .table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #ebeef5;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            color: #606266;
+            font-weight: 500;
+        }
+
+        .table tr:hover {
+            background-color: #fafafa;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #2f80ed;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #4096ff;
+        }
     </style>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="header">
         <h1>代理操作后台</h1>
-        <button onclick="logout()" style="background: white; color: #2f80ed;">退出登录</button>
+        <button class="logout-btn" onclick="logout()">退出登录</button>
     </div>
-    <div class="content">
-        <h2>登录成功！当前代理：<span id="userName" style="color: #2f80ed;"></span></h2>
-        <p style="margin-top: 1rem; color: #666;">你可以在这里查看代理数据（后续可扩展完整功能）</p>
+
+    <div class="main-container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">今日订单数</div>
+                <div class="stat-value">12</div>
+                <div class="stat-label">单</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">今日收益</div>
+                <div class="stat-value">¥2,400</div>
+                <div class="stat-label">元</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">本月订单</div>
+                <div class="stat-value">356</div>
+                <div class="stat-label">单</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">本月收益</div>
+                <div class="stat-value">¥78,500</div>
+                <div class="stat-label">元</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">最近订单列表</div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>订单ID</th>
+                        <th>客户名称</th>
+                        <th>订单金额</th>
+                        <th>下单时间</th>
+                        <th>订单状态</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>OD20260202001</td>
+                        <td>客户A</td>
+                        <td>¥800</td>
+                        <td>2026-02-02 10:00</td>
+                        <td><span style="color: #67c23a;">已完成</span></td>
+                    </tr>
+                    <tr>
+                        <td>OD20260202002</td>
+                        <td>客户B</td>
+                        <td>¥1,200</td>
+                        <td>2026-02-02 11:30</td>
+                        <td><span style="color: #4096ff;">处理中</span></td>
+                    </tr>
+                    <tr>
+                        <td>OD20260202003</td>
+                        <td>客户C</td>
+                        <td>¥1,500</td>
+                        <td>2026-02-02 14:15</td>
+                        <td><span style="color: #e6a23c;">待付款</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-primary" style="margin-top: 1rem;">导出全部订单</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">个人信息管理</div>
+            <form id="profileForm">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">用户名</label>
+                    <input type="text" id="proxyUsername" class="form-control" style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;" disabled>
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">当前密码</label>
+                    <input type="password" id="currentPwd" class="form-control" style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;" placeholder="请输入当前密码">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem;">新密码</label>
+                    <input type="password" id="newPwd" class="form-control" style="width: 100%; padding: 0.6rem; border: 1px solid #ddd; border-radius: 4px;" placeholder="请输入新密码">
+                </div>
+                <button type="submit" class="btn btn-primary">修改密码</button>
+            </form>
+        </div>
     </div>
 
     <script>
-        // 强制验证登录状态
         const loginUser = JSON.parse(localStorage.getItem('loginUser') || '{}');
+        
+        // 验证登录状态
         if (!loginUser.username || loginUser.role !== 'proxy') {
-            // 强制跳回登录页
             window.location.href = window.location.href.replace('proxy.html', 'index.html');
         } else {
-            document.getElementById('userName').textContent = loginUser.username;
+            document.getElementById('proxyUsername').value = loginUser.username;
         }
+
+        // 绑定修改密码表单
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const currentPwd = document.getElementById('currentPwd').value;
+            const newPwd = document.getElementById('newPwd').value;
+
+            if (currentPwd !== loginUser.password) {
+                alert('当前密码错误！');
+                return;
+            }
+
+            if (newPwd.length < 6) {
+                alert('新密码长度不能少于6位！');
+                return;
+            }
+
+            // 更新密码
+            let systemUsers = JSON.parse(localStorage.getItem('systemUsers') || '[]');
+            const userIndex = systemUsers.findIndex(u => u.id === loginUser.id);
+            if (userIndex !== -1) {
+                systemUsers[userIndex].password = newPwd;
+                localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
+                // 更新登录状态中的密码
+                loginUser.password = newPwd;
+                localStorage.setItem('loginUser', JSON.stringify(loginUser));
+                alert('密码修改成功！请重新登录');
+                logout();
+            }
+        });
 
         // 退出登录
         function logout() {
