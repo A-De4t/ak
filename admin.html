@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="common.css">
 </head>
 <body>
-    <!-- 顶部导航：用户名+退出按钮 -->
     <header class="admin-header">
         <h1>系统超级管理后台</h1>
         <div class="user-info">
@@ -16,7 +15,6 @@
         </div>
     </header>
 
-    <!-- 管理员专属功能区 -->
     <main class="content-container">
         <div class="function-card">
             <h3>🔧 管理员专属功能</h3>
@@ -37,22 +35,22 @@
     <script src="config.js"></script>
     <script src="common.js"></script>
     <script>
-        // 页面加载即校验：是否为管理员（非管理员直接踢回登录）
+        // 页面加载校验管理员权限+渲染代理列表
         window.onload = () => {
             checkAdminAuth();
-            renderProxyList(); // 渲染代理列表
+            renderProxyList();
         };
 
-        // 渲染代理账号列表（管理员专属）
+        // 渲染所有代理账号列表
         function renderProxyList() {
             const proxyListEl = document.getElementById("proxy-list");
-            // 过滤出所有代理账号
             const proxies = USER_LIST.filter(item => item.role === "proxy");
+            
             if (proxies.length === 0) {
                 proxyListEl.innerHTML = "<p class='no-proxy'>暂无代理账号</p>";
                 return;
             }
-            // 循环渲染
+
             proxyListEl.innerHTML = proxies.map(item => `
                 <div class="proxy-item">
                     账号：<span>${item.username}</span> | 密码：<span>${item.password}</span>
