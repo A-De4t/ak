@@ -6,7 +6,51 @@
     <title>代理后台</title>
     <link rel="stylesheet" href="common.css">
 </head>
+<body><!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代理操作后台 - 仅代理可访问</title>
+    <link rel="stylesheet" href="common.css">
+</head>
 <body>
+    <!-- 顶部导航：用户名+退出按钮 -->
+    <header class="proxy-header">
+        <h1>代理操作后台</h1>
+        <div class="user-info">
+            欢迎您，<span id="current-username" class="username"></span>（代理）
+            <button class="logout-btn" onclick="logout()">退出登录</button>
+        </div>
+    </header>
+
+    <!-- 核心内容区 -->
+    <main class="content-container">
+        <div class="function-card">
+            <h3>📱 代理专属操作功能</h3>
+            <ul>
+                <li>个人数据查看/统计</li>
+                <li>个人订单管理</li>
+                <li>个人设置修改</li>
+                <li>数据导出（个人专属）</li>
+            </ul>
+        </div>
+        <div class="function-card tip-card">
+            <h3>💡 温馨提示</h3>
+            <p>此页面仅对代理账号开放，无管理员权限；如需新增功能，请联系超级管理员！</p>
+        </div>
+    </main>
+
+    <script src="common.js"></script>
+    <script>
+        // 页面加载即校验：是否登录（自动拦截非登录/管理员越权）
+        window.onload = async () => {
+            await checkAuth();      // 基础登录校验
+            initAutoLogout();       // 初始化无操作自动退出
+        };
+    </script>
+</body>
+</html>
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <h1>代理后台</h1>
