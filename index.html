@@ -27,25 +27,37 @@
     </div>
 
     <script>
-        // 初始化用户数据（兼容新结构）
+        // 统一初始化用户数据（确保管理员账号 ak 始终存在）
         function initSystemUsers() {
-            if (!localStorage.getItem('systemUsers')) {
-                const defaultUsers = [
-                    { id: 1, username: 'ak', password: '2026', role: 'superAdmin', status: 'active', createTime: '2026-02-02' },
-                    { id: 2, username: 'testproxy', password: '123456', role: 'proxy', status: 'active', createTime: '2026-02-02' }
-                ];
-                localStorage.setItem('systemUsers', JSON.stringify(defaultUsers));
+            let systemUsers = JSON.parse(localStorage.getItem('systemUsers') || '[]');
+            
+            // 检查是否存在 ak 管理员账号，不存在则添加
+            const adminExists = systemUsers.some(u => u.username === 'ak' && u.role === 'superAdmin');
+            if (!adminExists) {
+                systemUsers.unshift({
+                    id: 1, 
+                    username: 'ak', 
+                    password: '2026', 
+                    role: 'superAdmin', 
+                    status: 'active', 
+                    createTime: '2026-02-02'
+                });
             }
-        }
-        initSystemUsers();
 
-        // 登录函数
+            // 保存到本地存储
+            localStorage.setItem('systemUsers', JSON.stringify(systemUsers));
+            return systemUsers;
+        }
+
+        // 核心登录函数（修复数据读取逻辑）
         function login() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
-            const systemUsers = JSON.parse(localStorage.getItem('systemUsers') || '[]');
             
-            // 验证账号密码+状态
+            // 先初始化并读取用户数据
+            const systemUsers = initSystemUsers();
+            
+            // 严格验证：用户名+密码+状态都匹配
             const user = systemUsers.find(u => 
                 u.username === username && 
                 u.password === password && 
@@ -57,8 +69,10 @@
                 return;
             }
 
-            // 存储登录状态并跳转
+            // 存储登录状态（确保数据完整）
             localStorage.setItem('loginUser', JSON.stringify(user));
+            
+            // 强制跳转（适配 GitHub Pages 路径）
             const baseUrl = window.location.href.replace('index.html', '');
             window.location.href = user.role === 'superAdmin' 
                 ? baseUrl + 'admin.html' 
