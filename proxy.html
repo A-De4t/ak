@@ -3,42 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>代理操作后台 - 仅代理可访问</title>
-    <link rel="stylesheet" href="common.css">
+    <title>代理操作后台</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="proxy-header">
+    <div class="header">
         <h1>代理操作后台</h1>
-        <div class="user-info">
-            欢迎您，<span id="current-username" class="username"></span>（代理）
-            <button class="logout-btn" onclick="logout()">退出登录</button>
+        <div class="header-right">
+            <span id="proxyName">欢迎您，(代理用户)</span>
+            <button id="proxyLogoutBtn" class="btn">退出登录</button>
         </div>
-    </header>
+    </div>
 
-    <main class="content-container">
-        <div class="function-card">
-            <h3>📱 代理专属操作功能</h3>
-            <ul>
-                <li>个人数据查看与统计</li>
-                <li>个人订单管理与操作</li>
-                <li>个人资料与密码修改</li>
-                <li>个人专属数据导出</li>
-                <li>业务提交与审核查询</li>
-            </ul>
+    <div class="main-container">
+        <!-- 左侧导航（仅显示代理可操作的功能） -->
+        <div class="sidebar">
+            <h3>代理专属功能</h3>
+            <div class="menu-item active" data-target="proxyData">我的代理数据</div>
+            <div class="menu-item" data-target="proxyProfile">个人信息管理</div>
+            <div class="menu-item" data-target="proxyLogs">我的操作日志</div>
         </div>
-        <div class="function-card tip-card">
-            <h3>💡 温馨提示</h3>
-            <p>此页面仅对代理账号开放，无管理员权限；如需新增功能/修改权限，请联系超级管理员！</p>
-        </div>
-    </main>
 
-    <script src="config.js"></script>
-    <script src="common.js"></script>
+        <!-- 右侧内容 -->
+        <div class="content" id="proxyContentArea">
+            <!-- 页面内容会通过 JS 动态加载 -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
     <script>
-        // 页面加载校验是否登录
-        window.onload = () => {
-            checkLoginAuth();
-        };
+        // 页面加载时验证是否已登录（防止直接访问）
+        if (!localStorage.getItem('loggedInUser')) {
+            window.location.href = 'index.html'; // 未登录则跳转到登录页
+        } else {
+            const user = JSON.parse(localStorage.getItem('loggedInUser'));
+            // 验证是否为代理（防止超级管理员冒充）
+            if (user.role !== 'proxy') {
+                localStorage.removeItem('loggedInUser');
+                window.location.href = 'index.html';
+            }
+            // 显示当前登录用户名
+            document.getElementById('proxyName').textContent = `欢迎您，(${user.username})`;
+            // 初始化代理后台页面
+            initProxyDashboard();
+        }
     </script>
 </body>
 </html>
